@@ -2,12 +2,16 @@ package com.smc.quicker.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.smc.quicker.R;
 import com.smc.quicker.service.FloatingService;
@@ -43,12 +47,25 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.alert_dark_frame)
+                .setTitle("注意")
+                .setMessage("是否保存设置?")
+                .setPositiveButton("是", (dialog, whichButton) -> {
+                    save();
+                    SettingsActivity.super.onBackPressed();
+                })
+                .setNegativeButton("否", (dialog, whichButton) -> {
+                    SettingsActivity.super.onBackPressed();
+                }).create().show();
+    }
+
+    public void save(){
         int[] rowCol = new int[2];
         rowCol[0] = rowSpinner.getSelectedItemPosition()+1;
         rowCol[1] = colSpinner.getSelectedItemPosition()+1;
         helper.setRowCol(rowCol);
         FloatingService.updateSetting();
-        super.onBackPressed();
     }
 
     @Override
@@ -56,6 +73,7 @@ public class SettingsActivity extends AppCompatActivity {
         //四个参数的含义:
         // 1.group的id;2.item的id;3.是否排序;4.将要显示的内容
         menu.add(0, 1, 0, "返回");
+        menu.add(0, 2, 0, "保存设置");
         return true;
     }
 
@@ -65,6 +83,10 @@ public class SettingsActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case 1:
                 finish();
+                break;
+            case 2:
+                save();
+                Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
                 break;
         }
         return true;

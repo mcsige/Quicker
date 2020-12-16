@@ -2,8 +2,11 @@ package com.smc.quicker.service;
 
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.PixelFormat;
@@ -28,6 +31,7 @@ import com.smc.quicker.R;
 import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.adapter.AppStartListAdapter;
 import com.smc.quicker.entity.AppInfo;
+import com.smc.quicker.receiver.VolumeBroadcastReceiver;
 import com.smc.quicker.util.DBHelper;
 import com.smc.quicker.util.SharedPreferencesHelper;
 import com.smc.quicker.view.FloatingView;
@@ -55,11 +59,13 @@ public class FloatingService extends Service {
     private static int row;
     private static int col;
     private static SharedPreferencesHelper helper;
+    private VolumeBroadcastReceiver receiver;
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCreate() {
         showFloatingWindow();
-        return super.onStartCommand(intent, flags, startId);
+        registerReceiver();
+        super.onCreate();
     }
 
     @Nullable
@@ -100,12 +106,6 @@ public class FloatingService extends Service {
                     | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
             layoutParams.format = PixelFormat.RGBA_8888;
             view_main = LayoutInflater.from(this).inflate(R.layout.float_ball_main, null);
-            view_main.setOnFocusChangeListener((v, hasFocus) -> {
-                if(windowManager!=null) {
-                    windowManager.removeView(view_main);
-                    flag = false;
-                }
-            });
             layoutParams_main = new WindowManager.LayoutParams();
             // 设置LayoutParam
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -118,13 +118,10 @@ public class FloatingService extends Service {
             layoutParams_main.x = -layoutParams_main.width/2;
             layoutParams_main.y = -layoutParams_main.height/2;
             // 当悬浮窗显示的时候可以获取到焦点
-            layoutParams_main.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                    | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE //不耽误返回键
-                    | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+            layoutParams_main.flags = WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                     | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
             layoutParams_main.format = PixelFormat.RGBA_8888;
-            Button cancelbtn = view_main.findViewById(R.id.cancelbtn);
-            cancelbtn.setOnClickListener(v -> {
+            view_main.setOnClickListener(v -> {
                 if(windowManager!=null) {
                     windowManager.removeView(view_main);
                     flag = false;
@@ -187,6 +184,7 @@ public class FloatingService extends Service {
 
             // 将悬浮窗控件添加到WindowManager
             windowManager.addView(view, layoutParams);
+            SmoothToHide(layoutParams.x,-width/2);
         }
     }
 
@@ -195,7 +193,7 @@ public class FloatingService extends Service {
         int mScreenHeight = display.getHeight();
         // 通过属性动画做最后的效果，右侧滑进到左侧，contentView 的页面从右侧开始向左侧滑动显示，那么 right 始终保持是屏幕的宽度不变，改变的是 left 属性，
         //从屏幕宽的值一直改变到 0，那属性动画的间隔就出来了，时间设置整体的滑动为 300 ms，那么剩下的距离需要的滑动时间就是 300 * posX / mScreenWidth
-        ValueAnimator animator = ValueAnimator.ofInt(from, to).setDuration(300 * Math.abs(to-from) / mScreenWidth);
+        ValueAnimator animator = ValueAnimator.ofInt(from, to).setDuration(600 * Math.abs(to-from) / mScreenWidth);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animator.addUpdateListener(animation -> {
             // 根据变化的值，重新设置 contentView 的布局
@@ -253,5 +251,30 @@ public class FloatingService extends Service {
         col = rowCol[1];
         curPage = 0;
         count();
+    }
+
+    public void registerReceiver() {
+        receiver = new VolumeBroadcastReceiver(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(VolumeBroadcastReceiver.VOLUME_CHANGED_ACTION);
+        registerReceiver(receiver, filter);
+    }
+
+    /**
+     * 判断服务是否在运行
+     * @param context
+     * @param serviceName
+     * @return
+     * 服务名称为全路径 例如com.ghost.WidgetUpdateService
+     */
+    public boolean isRunService(Context context,String serviceName) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            Log.e("smc",service.service.getClassName());
+            if (serviceName.equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
