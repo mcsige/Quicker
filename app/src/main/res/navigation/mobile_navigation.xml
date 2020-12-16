@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_up">
+
+    <fragment
+        android:id="@+id/navigation_up"
+        android:name="com.smc.quicker.activity.ui.home.HomeFragment"
+        tools:layout="@layout/fragment_up" />
+
+    <fragment
+        android:id="@+id/navigation_delete"
+        android:name="com.smc.quicker.activity.ui.dashboard.DashboardFragment"
+        tools:layout="@layout/fragment_delete" />
+
+    <fragment
+        android:id="@+id/navigation_down"
+        android:name="com.smc.quicker.activity.ui.notifications.NotificationsFragment"
+        tools:layout="@layout/fragment_down" />
+</navigation>

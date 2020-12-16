@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Quicker</string>
+    <string name="str1">测试1</string>
+    <string name="str2">测试2</string>
+    <string name="str3">测试3</string>
+    <string name="button">button</string>
+    <string name="open_list">添加快捷方式</string>
+    <string name="sure">确认</string>
+    <string name="cancel">关闭</string>
+    <string name="row">行数</string>
+    <string name="column">列数</string>
+    <string name="delete">删除</string>
+    <string name="moveup">上移</string>
+    <string name="movedown">下移</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+</resources>
