@@ -57,7 +57,10 @@ public class AppStartListAdapter extends BaseAdapter {
         }
         AppInfo appInfo = appInfoList.get(position);
         if (appInfo != null) {
-            holder.appName.setText(appInfo.getAppName());
+            if(appInfo.getAppName().length()>10)
+                holder.appName.setText(appInfo.getAppName().substring(0,10)+"..");
+            else
+                holder.appName.setText(appInfo.getAppName());
             try {
                 holder.appImage.setImageDrawable(pm.getApplicationIcon(appInfo.getPackageName()));
             } catch (PackageManager.NameNotFoundException e) {

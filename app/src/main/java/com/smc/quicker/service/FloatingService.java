@@ -38,7 +38,6 @@ import java.util.List;
 public class FloatingService extends Service {
 
     private int x,y,downX,downY;
-    private int mX,mY,mDownX,mDownY;
     private FloatingView view;
     private View view_main;
     private WindowManager windowManager;
@@ -122,6 +121,16 @@ public class FloatingService extends Service {
                     windowManager.removeView(view_main);
                     flag = false;
             });
+            Button lastPageBtn = view_main.findViewById(R.id.last_page_btn);
+            Button nextPageBtn = view_main.findViewById(R.id.next_page_btn);
+            lastPageBtn.setOnClickListener(v -> {
+                curPage = curPage==0?0:curPage-1;
+                getShortcut();
+            });
+            nextPageBtn.setOnClickListener(v -> {
+                curPage = curPage+1==totalPage?curPage:curPage+1;
+                getShortcut();
+            });
             view.setOnTouchListener((v, event) -> {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -198,7 +207,7 @@ public class FloatingService extends Service {
             windowManager.removeView(view_main);
             flag = false;
         });
-        mGridView.setNumColumns(4);
+        mGridView.setNumColumns(col);
         getShortcut();
     }
 

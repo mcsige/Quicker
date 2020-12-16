@@ -38,18 +38,18 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/last_page_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Button" />
+            android:text="@string/last_page" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/next_page_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Button" />
+            android:text="@string/next_page" />
     </LinearLayout>
 
 </LinearLayout>
