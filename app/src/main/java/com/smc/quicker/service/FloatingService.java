@@ -97,7 +97,12 @@ public class FloatingService extends Service {
                     | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
             layoutParams.format = PixelFormat.RGBA_8888;
             view_main = LayoutInflater.from(this).inflate(R.layout.float_ball_main, null);
-
+            view_main.setOnFocusChangeListener((v, hasFocus) -> {
+                if(windowManager!=null) {
+                    windowManager.removeView(view_main);
+                    flag = false;
+                }
+            });
             layoutParams_main = new WindowManager.LayoutParams();
             // 设置LayoutParam
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -117,9 +122,10 @@ public class FloatingService extends Service {
             layoutParams_main.format = PixelFormat.RGBA_8888;
             Button cancelbtn = view_main.findViewById(R.id.cancelbtn);
             cancelbtn.setOnClickListener(v -> {
-                if(windowManager!=null)
+                if(windowManager!=null) {
                     windowManager.removeView(view_main);
                     flag = false;
+                }
             });
             Button lastPageBtn = view_main.findViewById(R.id.last_page_btn);
             Button nextPageBtn = view_main.findViewById(R.id.next_page_btn);

@@ -7,8 +7,10 @@
     <string name="open_list">添加快捷方式</string>
     <string name="sure">确认</string>
     <string name="cancel">关闭</string>
-    <string name="row">行数</string>
-    <string name="column">列数</string>
+    <string name="setting">设置</string>
+    <string name="row">行</string>
+    <string name="column">列</string>
+    <string name="row_column">选择展示行列数</string>
     <string name="delete">删除</string>
     <string name="moveup">上移</string>
     <string name="movedown">下移</string>

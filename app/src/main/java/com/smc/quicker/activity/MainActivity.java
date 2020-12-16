@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
         //四个参数的含义:
         // 1.group的id;2.item的id;3.是否排序;4.将要显示的内容
         menu.add(0, 1, 0, "清空");
+        menu.add(0, 2, 0, "设置");
         return true;
     }
 
@@ -211,6 +212,10 @@ public class MainActivity extends AppCompatActivity {
                 database.close();
                 getAppInfoList();
                 selectedItem = IN_SELECTED;
+                break;
+            case 2:
+                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(intent);
                 break;
         }
         return true;
