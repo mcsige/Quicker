@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case "删除":
                         dbHelper.onDelete(database, new int[]{appList.get(selectedItem).getUid()});
+                        FloatingService.count();
                         Toast.makeText(MainActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
                         break;
                     case "下移":
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 dbHelper.onInsert(database,appInfo,order);
                 database.close();
                 getAppInfoList();
+                FloatingService.count();
                 Toast.makeText(this, "添加成功", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(this, "已添加过此应用", Toast.LENGTH_SHORT).show();

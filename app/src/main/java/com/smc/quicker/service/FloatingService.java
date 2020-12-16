@@ -29,6 +29,7 @@ import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.adapter.AppStartListAdapter;
 import com.smc.quicker.entity.AppInfo;
 import com.smc.quicker.util.DBHelper;
+import com.smc.quicker.util.SharedPreferencesHelper;
 import com.smc.quicker.view.FloatingView;
 
 import java.util.ArrayList;
@@ -46,12 +47,14 @@ public class FloatingService extends Service {
     private Display display;
     private GridView mGridView;
     private AppStartListAdapter adapter;
-    private DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
-    private SQLiteDatabase database;    //用于创建数据库对象
+    private static DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
+    private static SQLiteDatabase database;    //用于创建数据库对象
     private ArrayList<AppInfo> appList;
-    private int curPage = 0;
-    private int totalPage;
-    private int row = 1,col = 4;
+    private static int curPage = 0;
+    private static int totalPage;
+    private static int row;
+    private static int col;
+    private static SharedPreferencesHelper helper;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -68,15 +71,15 @@ public class FloatingService extends Service {
     @SuppressLint({"ClickableViewAccessibility"})
     private void showFloatingWindow() {
         if (Settings.canDrawOverlays(this)) {
+            helper = new SharedPreferencesHelper(this);
             // 获取WindowManager服务
             dbHelper = new DBHelper(this, "appinfo.db", null, 3);//创建帮助器对象
+            updateSetting();
             windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             display = windowManager.getDefaultDisplay();
             int width = display.getWidth();
             int height = display.getHeight();
-            database = dbHelper.getWritableDatabase();
-            totalPage = (int)Math.ceil(dbHelper.getCount(database)/(double)col*row);
-            database.close();
+            count();
             // 新建悬浮窗控件
             view = new FloatingView(this);
             layoutParams = new WindowManager.LayoutParams();
@@ -235,5 +238,20 @@ public class FloatingService extends Service {
         database.close();
         adapter = new AppStartListAdapter(this, appList,getPackageManager());
         mGridView.setAdapter(adapter);
+    }
+
+    public static void count(){
+        database = dbHelper.getWritableDatabase();
+        int dataCount = dbHelper.getCount(database);
+        totalPage =dataCount%col*row==0?dataCount/col*row:dataCount/col*row+1;
+        database.close();
+    }
+
+    public static void updateSetting(){
+        int[] rowCol = helper.getRowCol();
+        row = rowCol[0];
+        col = rowCol[1];
+        curPage = 0;
+        count();
     }
 }

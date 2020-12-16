@@ -32,7 +32,7 @@ public class PackageListAdapter extends ArrayAdapter<PackageInfo> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        PackageInfo packageInfo = getItem(position); // 获取当前项的Fruit实例
+        PackageInfo packageInfo = getItem(position); // 获取当前项的package实例
         View view;
         ViewHolder viewHolder;
         if (convertView == null) {
