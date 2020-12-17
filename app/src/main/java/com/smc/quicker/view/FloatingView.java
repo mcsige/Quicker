@@ -27,7 +27,7 @@ public class FloatingView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(dp2pix(height), dp2pix(width));
+        setMeasuredDimension(px2dp(height), px2dp(width));
     }
 
     @Override
@@ -35,20 +35,23 @@ public class FloatingView extends View {
         super.onDraw(canvas);
         // 随机颜色
         Random random = new Random();
-        int ranColor = 0xff000000 | random.nextInt(0x00ffffff);
+        int randColor = 0xff000000
+                | (random.nextInt(0xaf))<<16
+                | (random.nextInt(0xaf))<<8
+                | (random.nextInt(0xaf));
         //画大圆
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
-        paint.setColor(ranColor);
-        canvas.drawCircle(dp2pix(width / 2), dp2pix(width / 2), dp2pix(width / 2), paint);
+        paint.setColor(randColor);
+        canvas.drawCircle(px2dp(width / 2), px2dp(width / 2), px2dp(width / 2), paint);
         //画小圆圈
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.WHITE);
-        canvas.drawCircle(dp2pix(width / 2), dp2pix(width / 2), dp2pix(width / 4), paint);
+        canvas.drawCircle(px2dp(width / 2), px2dp(width / 2), px2dp(width / 4), paint);
     }
 
-    private int dp2pix(int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, Resources.getSystem().getDisplayMetrics());
+    public static int px2dp(int px) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, px, Resources.getSystem().getDisplayMetrics());
     }
 }
 

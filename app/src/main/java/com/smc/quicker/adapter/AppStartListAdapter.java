@@ -1,10 +1,12 @@
 package com.smc.quicker.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 
 import com.smc.quicker.R;
 import com.smc.quicker.entity.AppInfo;
+import com.smc.quicker.view.FloatingView;
 
 import java.util.List;
 
@@ -21,11 +24,13 @@ public class AppStartListAdapter extends BaseAdapter {
     private List<AppInfo> appInfoList;
     private LayoutInflater layoutInflater;
     private PackageManager pm;
+    private int emptyBackColor;
 
     public AppStartListAdapter(Context context, List<AppInfo> appInfoList, PackageManager pm) {
         this.appInfoList = appInfoList;
         layoutInflater = LayoutInflater.from(context);
         this.pm = pm;
+        emptyBackColor = context.getResources().getColor(R.color.light_gray);
     }
 
     @Override
@@ -45,7 +50,7 @@ public class AppStartListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder = null;
+        ViewHolder holder;
         if (convertView == null) {
             convertView = layoutInflater.inflate(R.layout.grid_appinfo_list, null);
             holder = new ViewHolder();
@@ -67,6 +72,10 @@ public class AppStartListAdapter extends BaseAdapter {
                 e.printStackTrace();
             }
         }
+        else{
+            convertView.setBackgroundColor(emptyBackColor);
+            holder.appName.setHeight(FloatingView.px2dp(75));
+        }
         return convertView;
     }
 
@@ -74,4 +83,5 @@ public class AppStartListAdapter extends BaseAdapter {
         TextView appName;
         ImageView appImage;
     }
+
 }

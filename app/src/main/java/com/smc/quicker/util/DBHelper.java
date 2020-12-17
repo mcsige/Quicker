@@ -30,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public Cursor onList(SQLiteDatabase db) {//查询全部数据
         String selectQuery = "SELECT "+AppInfo.KEY_uid+","+AppInfo.KEY_appName+","
                 +AppInfo.KEY_packageName+","+AppInfo.KEY_times+","+AppInfo.KEY_appOrder+" FROM "+AppInfo.TABLE
-                +" order by "+AppInfo.KEY_appOrder+","+AppInfo.KEY_times+" desc ";
+                +" order by "+AppInfo.KEY_times+" desc, "+AppInfo.KEY_appOrder;
         Cursor cursor = db.rawQuery(selectQuery, null);
         return cursor;
     }
@@ -75,7 +75,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_appOrder+" = "+ order + " where "+ AppInfo.KEY_uid + " = "+ id);
     }
 
-    public Cursor onQuery(SQLiteDatabase db, String appname) {//通过id查询
+    public Cursor onQuery(SQLiteDatabase db, String appname) {//通过name查询
         Cursor cursor;
         String selectQuery =  "SELECT "+AppInfo.KEY_uid+","+AppInfo.KEY_appName+","
                 +AppInfo.KEY_packageName+","+AppInfo.KEY_times+" FROM "+AppInfo.TABLE+" where "

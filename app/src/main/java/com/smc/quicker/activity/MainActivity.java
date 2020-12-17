@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
         });
         mRecyclerView = findViewById(R.id.saveAppList);
         startFloatingService();
-        getAppInfoList();
     }
 
     @Override
@@ -111,6 +110,12 @@ public class MainActivity extends AppCompatActivity {
         home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         home.addCategory(Intent.CATEGORY_HOME);
         startActivity(home);
+    }
+
+    @Override
+    protected void onStart() {
+        getAppInfoList();
+        super.onStart();
     }
 
     public void startFloatingService() {
@@ -219,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
                 database.close();
                 getAppInfoList();
                 selectedItem = IN_SELECTED;
+                FloatingService.count();
+                FloatingService.curPage = 0;
                 break;
             case 2:
                 Intent intent = new Intent(MainActivity.this,SettingsActivity.class);

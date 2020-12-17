@@ -57,7 +57,7 @@ public class FloatingService extends AccessibilityService {
     private static DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
     private static SQLiteDatabase database;    //用于创建数据库对象
     private ArrayList<AppInfo> appList;
-    private static int curPage = 0;
+    public static int curPage = 0;
     private static int totalPage;
     private static int row;
     private static int col;
@@ -213,10 +213,13 @@ public class FloatingService extends AccessibilityService {
     }
 
     private void initView() {
-        mGridView = (GridView) view_main.findViewById(R.id.gridview);
+        mGridView = view_main.findViewById(R.id.gridview);
         mGridView.setOnItemClickListener((parent, view, position, id) -> {
             if(appList.get(position)!=null) {
                 Intent intent = getPackageManager().getLaunchIntentForPackage(appList.get(position).getPackageName());
+                database = dbHelper.getWritableDatabase();
+                dbHelper.onUpdateTimes(database,appList.get(position).getUid());
+                database.close();
                 startActivity(intent);
             }
             windowManager.removeView(view_main);
@@ -242,6 +245,8 @@ public class FloatingService extends AccessibilityService {
             } while (cursor.moveToNext());
         }
         database.close();
+        while (appList.size()<row*col)
+            appList.add(null);
         adapter = new AppStartListAdapter(this, appList,getPackageManager());
         mGridView.setAdapter(adapter);
     }
@@ -249,7 +254,7 @@ public class FloatingService extends AccessibilityService {
     public static void count(){
         database = dbHelper.getWritableDatabase();
         int dataCount = dbHelper.getCount(database);
-        totalPage =dataCount%col*row==0?dataCount/col*row:dataCount/col*row+1;
+        totalPage =dataCount%(col*row)==0?dataCount/(col*row):dataCount/(col*row)+1;
         database.close();
     }
 

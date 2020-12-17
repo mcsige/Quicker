@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
@@ -29,12 +31,14 @@ public class SettingsActivity extends AppCompatActivity {
     private List<Integer> list = new ArrayList<>();
     private ArrayAdapter<Integer> adapter;
     private SharedPreferencesHelper helper;
-    private boolean isAutoSave;
+    private boolean isAutoSave,isEdit,init;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        isEdit = false;
+        init = false;
         rowSpinner = findViewById(R.id.row_spinner);
         colSpinner = findViewById(R.id.col_spinner);
         floatSwitch = findViewById(R.id.float_switch);
@@ -50,6 +54,36 @@ public class SettingsActivity extends AppCompatActivity {
         colSpinner.setAdapter(adapter);
         rowSpinner.setSelection(rowCol[0]-1);
         colSpinner.setSelection(rowCol[1]-1);
+        rowSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(init && isAutoSave){
+                   save();
+                }
+                init = true;
+                isEdit = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        colSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(init && isAutoSave){
+                    save();
+                }
+                init = true;
+                isEdit = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         floatSwitch.setChecked(true);
         saveSwitch.setChecked(isAutoSave);
         floatSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -66,7 +100,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(!isAutoSave)
+        if(!isAutoSave && isEdit)
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.alert_dark_frame)
                     .setTitle("注意")
@@ -78,11 +112,12 @@ public class SettingsActivity extends AppCompatActivity {
                     .setNegativeButton("否", (dialog, whichButton) -> {
                         SettingsActivity.super.onBackPressed();
                     }).create().show();
-        else{
+        else if(isAutoSave){
             save();
             super.onBackPressed();
         }
-
+        else
+            super.onBackPressed();
     }
 
     public void save(){
@@ -91,6 +126,7 @@ public class SettingsActivity extends AppCompatActivity {
         rowCol[1] = colSpinner.getSelectedItemPosition()+1;
         helper.setRowCol(rowCol);
         FloatingService.updateSetting();
+        isEdit = false;
     }
 
     @Override
@@ -119,7 +155,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if(helper.getAutoSave())
+        if(isAutoSave)
             save();
         super.onDestroy();
     }
