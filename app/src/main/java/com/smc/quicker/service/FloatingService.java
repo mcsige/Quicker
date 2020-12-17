@@ -215,10 +215,20 @@ public class FloatingService extends AccessibilityService {
     private void initView() {
         mGridView = view_main.findViewById(R.id.gridview);
         mGridView.setOnItemClickListener((parent, view, position, id) -> {
-            if(appList.get(position)!=null) {
-                Intent intent = getPackageManager().getLaunchIntentForPackage(appList.get(position).getPackageName());
+            AppInfo selectedAppinfo = appList.get(position);
+            if(selectedAppinfo!=null) {
+                Intent intent = getPackageManager().getLaunchIntentForPackage(selectedAppinfo.getPackageName());
+                int tarOrder = selectedAppinfo.getAppOrder();
+                for(AppInfo info : appList){
+                    if(info==null)
+                        break;
+                    if(info.getTimes()<=selectedAppinfo.getTimes()){
+                        tarOrder = info.getTimes();
+                        break;
+                    }
+                }
                 database = dbHelper.getWritableDatabase();
-                dbHelper.onUpdateTimes(database,appList.get(position).getUid());
+                dbHelper.onUpdateTimes(database,selectedAppinfo.getUid(),selectedAppinfo.getTimes()+1,tarOrder);
                 database.close();
                 startActivity(intent);
             }

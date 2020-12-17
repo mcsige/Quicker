@@ -15,15 +15,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.smc.quicker.R;
+import com.smc.quicker.entity.AppInfo;
 
 import java.util.List;
 
-public class PackageListAdapter extends ArrayAdapter<PackageInfo> {
+public class PackageListAdapter extends ArrayAdapter<AppInfo> {
 
     private int resourceId;
     private PackageManager pm;
 
-    public PackageListAdapter(@NonNull Context context, int resource, @NonNull List<PackageInfo> objects, PackageManager pm) {
+    public PackageListAdapter(@NonNull Context context, int resource, @NonNull List<AppInfo> objects, PackageManager pm) {
         super(context, resource, objects);
         resourceId = resource;
         this.pm = pm;
@@ -33,7 +34,7 @@ public class PackageListAdapter extends ArrayAdapter<PackageInfo> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        PackageInfo packageInfo = getItem(position); // 获取当前项的package实例
+        AppInfo appInfo = getItem(position); // 获取当前项的package实例
         View view;
         ViewHolder viewHolder;
         if (convertView == null) {
@@ -46,8 +47,12 @@ public class PackageListAdapter extends ArrayAdapter<PackageInfo> {
             view = convertView;
             viewHolder = (ViewHolder) view.getTag(); // 重新获取ViewHolder
         }
-        viewHolder.appImage.setImageDrawable(packageInfo.applicationInfo.loadIcon(pm));
-        viewHolder.appName.setText(packageInfo.applicationInfo.loadLabel(pm).toString());
+        try {
+            viewHolder.appImage.setImageDrawable(pm.getApplicationIcon(appInfo.getPackageName()));
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        viewHolder.appName.setText(appInfo.getAppName());
         return view;
     }
 

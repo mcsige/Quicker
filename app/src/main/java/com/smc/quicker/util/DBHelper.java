@@ -30,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public Cursor onList(SQLiteDatabase db) {//查询全部数据
         String selectQuery = "SELECT "+AppInfo.KEY_uid+","+AppInfo.KEY_appName+","
                 +AppInfo.KEY_packageName+","+AppInfo.KEY_times+","+AppInfo.KEY_appOrder+" FROM "+AppInfo.TABLE
-                +" order by "+AppInfo.KEY_times+" desc, "+AppInfo.KEY_appOrder;
+                +" order by "+AppInfo.KEY_appOrder+" , "+AppInfo.KEY_times+" desc";
         Cursor cursor = db.rawQuery(selectQuery, null);
         return cursor;
     }
@@ -67,8 +67,10 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("delete from " + AppInfo.TABLE);
     }
 
-    public void onUpdateTimes(SQLiteDatabase db, int id) {//更新次数
-        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_times+" = "+AppInfo.KEY_times + "+1 where "+ AppInfo.KEY_uid + " = "+ id);
+    public void onUpdateTimes(SQLiteDatabase db, int id,int tarTimes,int tarOrder) {//更新次数
+        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_appOrder+" = "+AppInfo.KEY_appOrder + "+1 where " + AppInfo.KEY_times + " <= "+ tarTimes);
+        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_times+" = " + tarTimes
+                +" , "+AppInfo.KEY_appOrder+" = "+tarOrder+ " where "+ AppInfo.KEY_uid + " = "+ id);
     }
 
     public void onUpdateOrder(SQLiteDatabase db, int id,int order) {//更新顺序
@@ -78,8 +80,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public Cursor onQuery(SQLiteDatabase db, String appname) {//通过name查询
         Cursor cursor;
         String selectQuery =  "SELECT "+AppInfo.KEY_uid+","+AppInfo.KEY_appName+","
-                +AppInfo.KEY_packageName+","+AppInfo.KEY_times+" FROM "+AppInfo.TABLE+" where "
-                +AppInfo.KEY_appName+" like %"+appname+"%";
+                +AppInfo.KEY_packageName + " FROM "+AppInfo.TABLE+" where "
+                +AppInfo.KEY_appName+" like \'%"+appname+"%\'";
         cursor = db.rawQuery(selectQuery,null);
         return cursor;
     }
