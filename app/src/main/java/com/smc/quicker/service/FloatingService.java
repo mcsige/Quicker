@@ -1,5 +1,6 @@
 package com.smc.quicker.service;
 
+import android.accessibilityservice.AccessibilityService;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -15,11 +16,13 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -40,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class FloatingService extends Service {
+public class FloatingService extends AccessibilityService {
 
     private int x,y,downX,downY;
     private FloatingView view;
@@ -68,10 +71,14 @@ public class FloatingService extends Service {
         super.onCreate();
     }
 
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+
+    }
+
+    @Override
+    public void onInterrupt() {
+
     }
 
     @SuppressLint({"ClickableViewAccessibility"})
@@ -254,27 +261,9 @@ public class FloatingService extends Service {
     }
 
     public void registerReceiver() {
-        receiver = new VolumeBroadcastReceiver(this);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(VolumeBroadcastReceiver.VOLUME_CHANGED_ACTION);
-        registerReceiver(receiver, filter);
+        receiver = new VolumeBroadcastReceiver(view);
+        final IntentFilter homeFilter = new IntentFilter(VolumeBroadcastReceiver.VOLUME_CHANGED_ACTION);
+        registerReceiver(receiver, homeFilter);
     }
 
-    /**
-     * 判断服务是否在运行
-     * @param context
-     * @param serviceName
-     * @return
-     * 服务名称为全路径 例如com.ghost.WidgetUpdateService
-     */
-    public boolean isRunService(Context context,String serviceName) {
-        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            Log.e("smc",service.service.getClassName());
-            if (serviceName.equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

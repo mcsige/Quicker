@@ -10,6 +10,8 @@ import android.view.View;
 
 import com.smc.quicker.R;
 
+import java.util.Random;
+
 public class FloatingView extends View {
 
     public int height = 50;
@@ -31,10 +33,13 @@ public class FloatingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        // 随机颜色
+        Random random = new Random();
+        int ranColor = 0xff000000 | random.nextInt(0x00ffffff);
         //画大圆
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
-        paint.setColor(getResources().getColor(R.color.purple_700_translucence));
+        paint.setColor(ranColor);
         canvas.drawCircle(dp2pix(width / 2), dp2pix(width / 2), dp2pix(width / 2), paint);
         //画小圆圈
         paint.setStyle(Paint.Style.STROKE);

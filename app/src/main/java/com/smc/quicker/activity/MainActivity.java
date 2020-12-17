@@ -9,12 +9,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -115,7 +118,9 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT);
             startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
         } else {
-            startService(new Intent(this, FloatingService.class));
+            if(!isRunService(this,FloatingService.class.getName())) {
+                startService(new Intent(this, FloatingService.class));
+            }
         }
     }
 
@@ -221,6 +226,23 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    /**
+     * 判断服务是否在运行
+     * @param context
+     * @param serviceName
+     * @return
+     * 服务名称为全路径 例如com.ghost.WidgetUpdateService
+     */
+    public boolean isRunService(Context context, String serviceName) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceName.equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
