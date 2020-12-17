@@ -30,8 +30,6 @@ public class PackageListActivity extends AppCompatActivity {
         List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
         appList = new ArrayList<>();
         for(PackageInfo packageInfo : packageInfos){
-            if(packageInfo.packageName.equals(this.getPackageName()))
-                continue;
             if(getPackageManager().getLaunchIntentForPackage(packageInfo.packageName)!=null)
                 appList.add(packageInfo);
         }

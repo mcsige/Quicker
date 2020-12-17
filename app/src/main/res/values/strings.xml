@@ -19,4 +19,6 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="float_switch">打开/关闭悬浮球</string>
+    <string name="save_switch">是否自动保存</string>
 </resources>

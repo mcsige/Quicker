@@ -17,6 +17,7 @@ public class SharedPreferencesHelper {
         if(sharedPreferences.getInt("row",0)==0){
             editor.putInt("row",3);
             editor.putInt("col",4);
+            editor.putBoolean("autoSave",false);
             editor.commit();
         }
     }
@@ -31,6 +32,17 @@ public class SharedPreferencesHelper {
     public void setRowCol(int[] rowCol){
         editor.putInt("row",rowCol[0]);
         editor.putInt("col",rowCol[1]);
+        editor.commit();
+    }
+
+    public boolean getAutoSave(){
+        boolean autoSave;
+        autoSave = sharedPreferences.getBoolean("autoSave",false);
+        return autoSave;
+    }
+
+    public void setAutoSave(boolean autoSave){
+        editor.putBoolean("autoSave",autoSave);
         editor.commit();
     }
 }

@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0"
+        android:padding="10dp"
         android:orientation="horizontal">
 
         <TextView
@@ -27,7 +28,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="0"
+        android:padding="10dp"
         android:orientation="horizontal">
 
         <TextView
@@ -35,7 +37,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/row_column" />
+            android:text="@string/row_column"
+            android:textColor="#000000" />
 
         <androidx.appcompat.widget.AppCompatSpinner
             android:id="@+id/row_spinner"
@@ -64,6 +67,38 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/column" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <Switch
+            android:id="@+id/float_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/float_switch" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <Switch
+            android:id="@+id/save_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save_switch" />
     </LinearLayout>
 
 </LinearLayout>

@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT);
             startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
         } else {
-            if(!isRunService(this,FloatingService.class.getName())) {
+            if(!FloatingService.isRunService(this)) {
                 startService(new Intent(this, FloatingService.class));
             }
         }
@@ -227,22 +227,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
-    /**
-     * 判断服务是否在运行
-     * @param context
-     * @param serviceName
-     * @return
-     * 服务名称为全路径 例如com.ghost.WidgetUpdateService
-     */
-    public boolean isRunService(Context context, String serviceName) {
-        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceName.equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }

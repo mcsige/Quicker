@@ -10,7 +10,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.smc.quicker.R;
@@ -23,9 +25,11 @@ import java.util.List;
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner rowSpinner,colSpinner;
+    private Switch floatSwitch,saveSwitch;
     private List<Integer> list = new ArrayList<>();
     private ArrayAdapter<Integer> adapter;
     private SharedPreferencesHelper helper;
+    private boolean isAutoSave;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +37,10 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
         rowSpinner = findViewById(R.id.row_spinner);
         colSpinner = findViewById(R.id.col_spinner);
+        floatSwitch = findViewById(R.id.float_switch);
+        saveSwitch = findViewById(R.id.save_switch);
         helper = new SharedPreferencesHelper(this);
+        isAutoSave = helper.getAutoSave();
         int[] rowCol = helper.getRowCol();
         for(int i = 1;i<=5;i++)
             list.add(i);
@@ -43,21 +50,39 @@ public class SettingsActivity extends AppCompatActivity {
         colSpinner.setAdapter(adapter);
         rowSpinner.setSelection(rowCol[0]-1);
         colSpinner.setSelection(rowCol[1]-1);
+        floatSwitch.setChecked(true);
+        saveSwitch.setChecked(isAutoSave);
+        floatSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if(isChecked && !FloatingService.isRunService(this))
+                startService(new Intent(this, FloatingService.class));
+            else
+                stopService(new Intent(this, FloatingService.class));
+        });
+        saveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isAutoSave = isChecked;
+            helper.setAutoSave(isChecked);
+        });
     }
 
     @Override
     public void onBackPressed() {
-        new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.alert_dark_frame)
-                .setTitle("注意")
-                .setMessage("是否保存设置?")
-                .setPositiveButton("是", (dialog, whichButton) -> {
-                    save();
-                    SettingsActivity.super.onBackPressed();
-                })
-                .setNegativeButton("否", (dialog, whichButton) -> {
-                    SettingsActivity.super.onBackPressed();
-                }).create().show();
+        if(!isAutoSave)
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.alert_dark_frame)
+                    .setTitle("注意")
+                    .setMessage("是否保存设置?")
+                    .setPositiveButton("是", (dialog, whichButton) -> {
+                        save();
+                        SettingsActivity.super.onBackPressed();
+                    })
+                    .setNegativeButton("否", (dialog, whichButton) -> {
+                        SettingsActivity.super.onBackPressed();
+                    }).create().show();
+        else{
+            save();
+            super.onBackPressed();
+        }
+
     }
 
     public void save(){
@@ -90,5 +115,12 @@ public class SettingsActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(helper.getAutoSave())
+            save();
+        super.onDestroy();
     }
 }

@@ -196,19 +196,20 @@ public class FloatingService extends AccessibilityService {
     }
 
     private void SmoothToHide(int from,int to) {
-        int mScreenWidth = display.getWidth();
-        int mScreenHeight = display.getHeight();
-        // 通过属性动画做最后的效果，右侧滑进到左侧，contentView 的页面从右侧开始向左侧滑动显示，那么 right 始终保持是屏幕的宽度不变，改变的是 left 属性，
-        //从屏幕宽的值一直改变到 0，那属性动画的间隔就出来了，时间设置整体的滑动为 300 ms，那么剩下的距离需要的滑动时间就是 300 * posX / mScreenWidth
-        ValueAnimator animator = ValueAnimator.ofInt(from, to).setDuration(600 * Math.abs(to-from) / mScreenWidth);
-        animator.setInterpolator(new AccelerateDecelerateInterpolator());
-        animator.addUpdateListener(animation -> {
-            // 根据变化的值，重新设置 contentView 的布局
-            int pos = (int) animation.getAnimatedValue();
-            layoutParams.x = pos;
-            windowManager.updateViewLayout(view, layoutParams);
-        });
-        animator.start();
+            int mScreenWidth = display.getWidth();
+            int mScreenHeight = display.getHeight();
+            // 通过属性动画做最后的效果，右侧滑进到左侧，contentView 的页面从右侧开始向左侧滑动显示，那么 right 始终保持是屏幕的宽度不变，改变的是 left 属性，
+            //从屏幕宽的值一直改变到 0，那属性动画的间隔就出来了，时间设置整体的滑动为 300 ms，那么剩下的距离需要的滑动时间就是 300 * posX / mScreenWidth
+            ValueAnimator animator = ValueAnimator.ofInt(from, to).setDuration(600 * Math.abs(to - from) / mScreenWidth);
+            animator.setInterpolator(new AccelerateDecelerateInterpolator());
+            animator.addUpdateListener(animation -> {
+                // 根据变化的值，重新设置 contentView 的布局
+                int pos = (int) animation.getAnimatedValue();
+                layoutParams.x = pos;
+                if(windowManager!=null)
+                    windowManager.updateViewLayout(view, layoutParams);
+            });
+            animator.start();
     }
 
     private void initView() {
@@ -266,4 +267,28 @@ public class FloatingService extends AccessibilityService {
         registerReceiver(receiver, homeFilter);
     }
 
+
+    /**
+     * 判断服务是否在运行
+     * @param context
+     * @return
+     * 服务名称为全路径 例如com.ghost.WidgetUpdateService
+     */
+    public static boolean isRunService(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (FloatingService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroy() {
+        windowManager.removeView(view);
+        windowManager = null;
+        unregisterReceiver(receiver);
+        super.onDestroy();
+    }
 }
