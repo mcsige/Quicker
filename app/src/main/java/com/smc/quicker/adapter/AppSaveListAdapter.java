@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -25,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.smc.quicker.R;
 import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.entity.AppInfo;
+import com.smc.quicker.util.DBHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +37,14 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
     private ArrayList<AppInfo> appInfos;
     private Resources resources;
     private ArrayList<View> views;
+    private Context context;
 
-    public AppSaveListAdapter(PackageManager pm, ArrayList<AppInfo> appInfos, Resources resources) {
+    public AppSaveListAdapter(PackageManager pm, ArrayList<AppInfo> appInfos, Resources resources,Context context) {
         this.pm = pm;
         this.appInfos = appInfos;
         this.resources = resources;
         views = new ArrayList<>();
+        this.context = context;
     }
 
     @NonNull
@@ -71,6 +75,11 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
             holder.appImage.setImageDrawable(pm.getApplicationIcon(appInfo.getPackageName()));//注意数据类型
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
+            DBHelper dbHelper = new DBHelper(context, "appinfo.db", null, 3);//创建帮助器对象
+            SQLiteDatabase database = dbHelper.getWritableDatabase();
+            dbHelper.onDelete(database,new int[]{appInfo.getUid()});
+            database.close();
+            return;
         }
         holder.appName.setText(appInfo.getAppName());
         holder.appTimes.setText("最近使用次数:"+appInfo.getTimes());

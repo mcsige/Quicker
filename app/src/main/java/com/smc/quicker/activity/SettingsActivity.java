@@ -31,14 +31,14 @@ public class SettingsActivity extends AppCompatActivity {
     private List<Integer> list = new ArrayList<>();
     private ArrayAdapter<Integer> adapter;
     private SharedPreferencesHelper helper;
-    private boolean isAutoSave,isEdit,init;
+    private boolean isAutoSave,isEdit;
+    private int init;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+    protected void onStart() {
+        super.onStart();
         isEdit = false;
-        init = false;
+        init = 0;
         rowSpinner = findViewById(R.id.row_spinner);
         colSpinner = findViewById(R.id.col_spinner);
         floatSwitch = findViewById(R.id.float_switch);
@@ -57,11 +57,11 @@ public class SettingsActivity extends AppCompatActivity {
         rowSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(init && isAutoSave){
-                   save();
-                }
-                init = true;
-                isEdit = true;
+                if(init>1 && isAutoSave)
+                    save();
+                else if(init>1)
+                    isEdit = true;
+                init++;
             }
 
             @Override
@@ -72,11 +72,11 @@ public class SettingsActivity extends AppCompatActivity {
         colSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(init && isAutoSave){
+                if(init>1 && isAutoSave)
                     save();
-                }
-                init = true;
-                isEdit = true;
+                else if(init>1)
+                    isEdit = true;
+                init++;
             }
 
             @Override
@@ -84,18 +84,24 @@ public class SettingsActivity extends AppCompatActivity {
 
             }
         });
-        floatSwitch.setChecked(true);
+        floatSwitch.setChecked(FloatingService.isRunService(this));
         saveSwitch.setChecked(isAutoSave);
         floatSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if(isChecked && !FloatingService.isRunService(this))
                 startService(new Intent(this, FloatingService.class));
-            else
+            else if(!isChecked)
                 stopService(new Intent(this, FloatingService.class));
         });
         saveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isAutoSave = isChecked;
             helper.setAutoSave(isChecked);
         });
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_settings);
     }
 
     @Override

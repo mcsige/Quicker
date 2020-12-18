@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 
 import com.smc.quicker.R;
 import com.smc.quicker.entity.AppInfo;
+import com.smc.quicker.util.DBHelper;
 import com.smc.quicker.view.FloatingView;
 
 import java.util.List;
@@ -25,11 +27,13 @@ public class AppStartListAdapter extends BaseAdapter {
     private LayoutInflater layoutInflater;
     private PackageManager pm;
     private int emptyBackColor;
+    private Context context;
 
     public AppStartListAdapter(Context context, List<AppInfo> appInfoList, PackageManager pm) {
         this.appInfoList = appInfoList;
         layoutInflater = LayoutInflater.from(context);
         this.pm = pm;
+        this.context = context;
         emptyBackColor = context.getResources().getColor(R.color.light_gray);
     }
 
@@ -70,6 +74,10 @@ public class AppStartListAdapter extends BaseAdapter {
                 holder.appImage.setImageDrawable(pm.getApplicationIcon(appInfo.getPackageName()));
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
+                DBHelper dbHelper = new DBHelper(context, "appinfo.db", null, 3);//创建帮助器对象
+                SQLiteDatabase database = dbHelper.getWritableDatabase();
+                dbHelper.onDelete(database,new int[]{appInfo.getUid()});
+                database.close();
             }
         }
         else{

@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AppOpsManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -39,6 +41,7 @@ import com.smc.quicker.util.DBHelper;
 import com.smc.quicker.util.SharedPreferencesHelper;
 import com.smc.quicker.view.FloatingView;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +66,7 @@ public class FloatingService extends AccessibilityService {
     private static int col;
     private static SharedPreferencesHelper helper;
     private VolumeBroadcastReceiver receiver;
+    private int width,height;
 
     @Override
     public void onCreate() {
@@ -90,8 +94,8 @@ public class FloatingService extends AccessibilityService {
             updateSetting();
             windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             display = windowManager.getDefaultDisplay();
-            int width = display.getWidth();
-            int height = display.getHeight();
+            width = display.getWidth();
+            height = display.getHeight();
             count();
             // 新建悬浮窗控件
             view = new FloatingView(this);
@@ -145,6 +149,9 @@ public class FloatingService extends AccessibilityService {
                 getShortcut();
             });
             view.setOnTouchListener((v, event) -> {
+                display = windowManager.getDefaultDisplay();
+                width = display.getWidth();
+                height = display.getHeight();
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         x = (int) event.getRawX();
@@ -218,19 +225,16 @@ public class FloatingService extends AccessibilityService {
             AppInfo selectedAppinfo = appList.get(position);
             if(selectedAppinfo!=null) {
                 Intent intent = getPackageManager().getLaunchIntentForPackage(selectedAppinfo.getPackageName());
-                int tarOrder = selectedAppinfo.getAppOrder();
-                for(AppInfo info : appList){
-                    if(info==null)
-                        break;
-                    if(info.getTimes()<=selectedAppinfo.getTimes()){
-                        tarOrder = info.getTimes();
-                        break;
-                    }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//重要
+                if(intent!=null) {
+                    database = dbHelper.getWritableDatabase();
+                    dbHelper.onUpdateTimes(database, selectedAppinfo.getUid());
+                    database.close();
+                    FloatingService.this.startActivity(intent);
                 }
-                database = dbHelper.getWritableDatabase();
-                dbHelper.onUpdateTimes(database,selectedAppinfo.getUid(),selectedAppinfo.getTimes()+1,tarOrder);
-                database.close();
-                startActivity(intent);
+                else{
+                    Toast.makeText(this, "打开应用失败，是否已卸载", Toast.LENGTH_SHORT).show();
+                }
             }
             windowManager.removeView(view_main);
             flag = false;

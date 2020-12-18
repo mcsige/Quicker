@@ -67,10 +67,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("delete from " + AppInfo.TABLE);
     }
 
-    public void onUpdateTimes(SQLiteDatabase db, int id,int tarTimes,int tarOrder) {//更新次数
-        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_appOrder+" = "+AppInfo.KEY_appOrder + "+1 where " + AppInfo.KEY_times + " <= "+ tarTimes);
-        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_times+" = " + tarTimes
-                +" , "+AppInfo.KEY_appOrder+" = "+tarOrder+ " where "+ AppInfo.KEY_uid + " = "+ id);
+    public void onUpdateTimes(SQLiteDatabase db, int id) {//更新次数
+        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_times+" = "+AppInfo.KEY_times + "+1 where " + AppInfo.KEY_uid + " = "+ id);
     }
 
     public void onUpdateOrder(SQLiteDatabase db, int id,int order) {//更新顺序

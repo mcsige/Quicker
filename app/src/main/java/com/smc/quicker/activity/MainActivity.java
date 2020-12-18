@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void initListView(){
         getPositionAndOffset();
-        adapter = new AppSaveListAdapter(getPackageManager(),appList,getResources());
+        adapter = new AppSaveListAdapter(getPackageManager(),appList,getResources(),this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(adapter);
         scrollToPosition();

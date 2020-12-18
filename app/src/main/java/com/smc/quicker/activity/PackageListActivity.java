@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
@@ -67,27 +69,14 @@ public class PackageListActivity extends AppCompatActivity {
         myAutoCompleteTextView.setAdapter(arrayAdapter);   //设置适配器
         myAutoCompleteTextView.setThreshold(1);   //定义需要用户输入的字符数
         myAutoCompleteTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        myAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                getSearchPackage(myAutoCompleteTextView.getText().toString().toLowerCase());
-            }
+        myAutoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
+            getSearchPackage(myAutoCompleteTextView.getText().toString());
         });
     }
 
     public void getSearchPackage(String searchPackageName){
         for(int i = 0;i<appNames.length;i++){
-            if(appNames[i].toLowerCase().startsWith(searchPackageName)){
+            if(appNames[i].equals(searchPackageName)){
                 listView.smoothScrollToPosition(i);
                 break;
             }
