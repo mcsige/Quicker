@@ -220,6 +220,7 @@ public class FloatingService extends AccessibilityService {
     }
 
     private void initView() {
+        view_main.setFocusable(true);
         mGridView = view_main.findViewById(R.id.gridview);
         mGridView.setOnItemClickListener((parent, view, position, id) -> {
             AppInfo selectedAppinfo = appList.get(position);
@@ -261,7 +262,7 @@ public class FloatingService extends AccessibilityService {
         database.close();
         while (appList.size()<row*col)
             appList.add(null);
-        adapter = new AppStartListAdapter(this, appList,getPackageManager());
+        adapter = new AppStartListAdapter(mGridView,row,this, appList,getPackageManager());
         mGridView.setAdapter(adapter);
     }
 

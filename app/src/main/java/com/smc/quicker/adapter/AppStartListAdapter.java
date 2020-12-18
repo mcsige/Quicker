@@ -1,25 +1,21 @@
 package com.smc.quicker.adapter;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.util.TypedValue;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.smc.quicker.R;
 import com.smc.quicker.entity.AppInfo;
 import com.smc.quicker.util.DBHelper;
-import com.smc.quicker.view.FloatingView;
-
 import java.util.List;
 
 public class AppStartListAdapter extends BaseAdapter {
@@ -28,12 +24,16 @@ public class AppStartListAdapter extends BaseAdapter {
     private PackageManager pm;
     private int emptyBackColor;
     private Context context;
+    private GridView gv;
+    private int row;
 
-    public AppStartListAdapter(Context context, List<AppInfo> appInfoList, PackageManager pm) {
+    public AppStartListAdapter(GridView gv, int row,Context context, List<AppInfo> appInfoList, PackageManager pm) {
         this.appInfoList = appInfoList;
         layoutInflater = LayoutInflater.from(context);
         this.pm = pm;
         this.context = context;
+        this.gv = gv;
+        this.row = row;
         emptyBackColor = context.getResources().getColor(R.color.light_gray);
     }
 
@@ -49,7 +49,7 @@ public class AppStartListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
@@ -82,7 +82,8 @@ public class AppStartListAdapter extends BaseAdapter {
         }
         else{
             convertView.setBackgroundColor(emptyBackColor);
-            holder.appName.setHeight(FloatingView.px2dp(75));
+            convertView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                    ,(gv.getHeight()-(row-1)*gv.getVerticalSpacing()-2*gv.getPaddingLeft())/row));
         }
         return convertView;
     }
