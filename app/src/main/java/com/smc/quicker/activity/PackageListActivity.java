@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -31,10 +32,9 @@ import java.util.List;
 public class PackageListActivity extends AppCompatActivity {
 
     private List<AppInfo> appList;
-    private DBHelper dbHelper;
-    private SQLiteDatabase database;
     private ListView listView;
     private PackageListAdapter adapter;
+    private String[] appNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,7 @@ public class PackageListActivity extends AppCompatActivity {
             setResult(RESULT_OK,intent);
             finish();
         });
-        String[] appNames = new String[appList.size()];
+        appNames = new String[appList.size()];
         int i = 0;
         for(AppInfo appInfo:appList){
             appNames[i++] = appInfo.getAppName();
@@ -66,7 +66,7 @@ public class PackageListActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,appNames);
         myAutoCompleteTextView.setAdapter(arrayAdapter);   //设置适配器
         myAutoCompleteTextView.setThreshold(1);   //定义需要用户输入的字符数
-        dbHelper = new DBHelper(PackageListActivity.this, "appinfo.db", null, 3);//创建帮助器对象
+        myAutoCompleteTextView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         myAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -80,29 +80,18 @@ public class PackageListActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                getSearchPackage(myAutoCompleteTextView.getText().toString());
+                getSearchPackage(myAutoCompleteTextView.getText().toString().toLowerCase());
             }
         });
     }
 
     public void getSearchPackage(String searchPackageName){
-        database = dbHelper.getWritableDatabase();
-        Cursor cursor = dbHelper.onQuery(database,searchPackageName);
-        appList = new ArrayList<>();
-        if (cursor.moveToFirst()) {
-            do {
-                AppInfo appInfo1 = new AppInfo();
-                appInfo1.setUid(Integer.parseInt(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_uid))));
-                appInfo1.setAppName(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_appName)));
-                appInfo1.setPackageName(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_packageName)));
-                appInfo1.setTimes(0);
-                appInfo1.setAppOrder(0);
-                appList.add(appInfo1);
-            } while (cursor.moveToNext());
+        for(int i = 0;i<appNames.length;i++){
+            if(appNames[i].toLowerCase().startsWith(searchPackageName)){
+                listView.smoothScrollToPosition(i);
+                break;
+            }
         }
-        database.close();
-        adapter = new PackageListAdapter(PackageListActivity.this, R.layout.app_item, appList,getPackageManager());
-        listView.setAdapter(adapter);
     }
 
     @Override

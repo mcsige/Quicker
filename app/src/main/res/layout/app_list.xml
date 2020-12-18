@@ -6,8 +6,8 @@
 
     <AutoCompleteTextView
         android:id="@+id/search_TextView"
-        android:inputType="textNoSuggestions"
         android:layout_width="fill_parent"
+        android:hint="@string/search"
         android:layout_height="wrap_content" />
 
     <ListView
