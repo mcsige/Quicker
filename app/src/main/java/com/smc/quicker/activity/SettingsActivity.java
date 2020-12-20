@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +20,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.smc.quicker.R;
+import com.smc.quicker.entity.AppInfo;
 import com.smc.quicker.service.FloatingService;
 import com.smc.quicker.util.SharedPreferencesHelper;
 
@@ -87,8 +90,16 @@ public class SettingsActivity extends AppCompatActivity {
         floatSwitch.setChecked(FloatingService.isRunService(this));
         saveSwitch.setChecked(isAutoSave);
         floatSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if(isChecked && !FloatingService.isRunService(this))
-                startService(new Intent(this, FloatingService.class));
+            if(isChecked && !FloatingService.isRunService(this)) {
+                if (!Settings.canDrawOverlays(this)) {
+                    Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT);
+                    startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
+                } else {
+                    if(!FloatingService.isRunService(this)) {
+                        startService(new Intent(this, FloatingService.class));
+                    }
+                }
+            }
             else if(!isChecked)
                 stopService(new Intent(this, FloatingService.class));
         });
@@ -157,6 +168,19 @@ public class SettingsActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0) {
+            if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, "授权失败", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
+                startService(new Intent(SettingsActivity.this, FloatingService.class));
+            }
+        }
     }
 
     @Override

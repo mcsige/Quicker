@@ -6,6 +6,8 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.PixelFormat;
@@ -35,6 +37,7 @@ import com.smc.quicker.util.SharedPreferencesHelper;
 import com.smc.quicker.view.FloatingView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class FloatingService extends AccessibilityService {
@@ -51,6 +54,7 @@ public class FloatingService extends AccessibilityService {
     private static DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
     private static SQLiteDatabase database;    //用于创建数据库对象
     private ArrayList<AppInfo> appList;
+    public static ArrayList<AppInfo> packageList;
     public static int curPage = 0;
     private static int totalPage;
     public static int row;
@@ -64,6 +68,13 @@ public class FloatingService extends AccessibilityService {
     public void onCreate() {
         showFloatingWindow();
         registerReceiver();
+        List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
+        packageList = new ArrayList<>();
+        for(PackageInfo packageInfo : packageInfos){
+            if(getPackageManager().getLaunchIntentForPackage(packageInfo.packageName)!=null)
+                packageList.add(new AppInfo(packageInfo.packageName,
+                        packageInfo.applicationInfo.loadLabel(getPackageManager()).toString(),packageInfo.applicationInfo.uid,0,0));
+        }
         super.onCreate();
     }
 

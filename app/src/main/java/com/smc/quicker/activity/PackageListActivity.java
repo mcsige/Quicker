@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.smc.quicker.adapter.PackageListAdapter;
 import com.smc.quicker.R;
 import com.smc.quicker.entity.AppInfo;
+import com.smc.quicker.service.FloatingService;
 import com.smc.quicker.util.DBHelper;
 
 import java.util.ArrayList;
@@ -42,12 +43,17 @@ public class PackageListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_list);
-        List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
-        appList = new ArrayList<>();
-        for(PackageInfo packageInfo : packageInfos){
-            if(getPackageManager().getLaunchIntentForPackage(packageInfo.packageName)!=null)
-                appList.add(new AppInfo(packageInfo.packageName,
-                        packageInfo.applicationInfo.loadLabel(getPackageManager()).toString(),packageInfo.applicationInfo.uid,0,0));
+        if(FloatingService.packageList==null) {
+            List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
+            appList = new ArrayList<>();
+            for (PackageInfo packageInfo : packageInfos) {
+                if (getPackageManager().getLaunchIntentForPackage(packageInfo.packageName) != null)
+                    appList.add(new AppInfo(packageInfo.packageName,
+                            packageInfo.applicationInfo.loadLabel(getPackageManager()).toString(), packageInfo.applicationInfo.uid, 0, 0));
+            }
+        }
+        else{
+            appList = new ArrayList<>(FloatingService.packageList);
         }
         adapter = new PackageListAdapter(PackageListActivity.this, R.layout.app_item, appList,getPackageManager());
         listView = findViewById(R.id.mListView);

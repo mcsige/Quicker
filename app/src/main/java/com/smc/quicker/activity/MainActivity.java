@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        startFloatingService();
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         //底部菜单
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -67,23 +69,25 @@ public class MainActivity extends AppCompatActivity {
                 database = dbHelper.getWritableDatabase();
                 switch (item.toString()) {
                     case "上移":
-                        if(selectedItem!=0) {
+                        if(selectedItem>0) {
                             int tmp = appList.get(selectedItem).getAppOrder();
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem).getUid(), appList.get(selectedItem - 1).getAppOrder());
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem-1).getUid(), tmp);
+                            dbHelper.onUpdateOrder(database, appList.get(selectedItem).getPackageName(), appList.get(selectedItem - 1).getAppOrder());
+                            dbHelper.onUpdateOrder(database, appList.get(selectedItem-1).getPackageName(), tmp);
                             selectedItem--;
                         }
                         break;
                     case "删除":
-                        dbHelper.onDelete(database, new int[]{appList.get(selectedItem).getUid()});
+                        dbHelper.onDelete(database, new String[]{appList.get(selectedItem).getPackageName()});
                         FloatingService.count();
                         Toast.makeText(MainActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
+                        if(selectedItem==0)
+                            selectedItem = IN_SELECTED;
                         break;
                     case "下移":
-                        if(selectedItem!=appList.size()-1) {
+                        if(selectedItem<appList.size()-1) {
                             int tmp = appList.get(selectedItem).getAppOrder();
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem).getUid(), appList.get(selectedItem + 1).getAppOrder());
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem+1).getUid(), tmp);
+                            dbHelper.onUpdateOrder(database, appList.get(selectedItem).getPackageName(), appList.get(selectedItem + 1).getAppOrder());
+                            dbHelper.onUpdateOrder(database, appList.get(selectedItem+1).getPackageName(), tmp);
                             selectedItem++;
                         }
                         break;
@@ -101,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent,1);
         });
         mRecyclerView = findViewById(R.id.saveAppList);
-        startFloatingService();
     }
 
     @Override
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void initListView(){
         getPositionAndOffset();
-        adapter = new AppSaveListAdapter(getPackageManager(),appList,getResources(),this);
+        adapter = new AppSaveListAdapter(getPackageManager(),appList,getResources(),this,mRecyclerView);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(adapter);
         scrollToPosition();

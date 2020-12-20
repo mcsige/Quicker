@@ -64,15 +64,18 @@ public class AppStartListAdapter extends BaseAdapter {
         }
         AppInfo appInfo = appInfoList.get(position);
         if (appInfo != null) {
-            holder.appName.setText(appInfo.getAppName());
             try {
                 holder.appImage.setImageDrawable(pm.getApplicationIcon(appInfo.getPackageName()));
+                holder.appName.setText(appInfo.getAppName());
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
                 DBHelper dbHelper = new DBHelper(context, "appinfo.db", null, 3);//创建帮助器对象
                 SQLiteDatabase database = dbHelper.getWritableDatabase();
-                dbHelper.onDelete(database,new int[]{appInfo.getUid()});
+                dbHelper.onDelete(database,new String[]{appInfo.getPackageName()});
                 database.close();
+                convertView.setBackgroundColor(emptyBackColor);
+                convertView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                        ,(gv.getHeight()-(row-1)*gv.getVerticalSpacing()-2*gv.getPaddingLeft())/row));
             }
         }
         else{

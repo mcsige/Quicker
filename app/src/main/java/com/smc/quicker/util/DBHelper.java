@@ -19,9 +19,9 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {//建立数据库
         String CREATE_TABLE_STUDENT = "CREATE TABLE " + AppInfo.TABLE  + "("
-                + AppInfo.KEY_uid  + " INTEGER PRIMARY KEY ,"
+                + AppInfo.KEY_uid  + " INTEGER , "
                 + AppInfo.KEY_appName + " TEXT, "
-                + AppInfo.KEY_packageName + " TEXT, "
+                + AppInfo.KEY_packageName + " TEXT PRIMARY KEY, "
                 + AppInfo.KEY_times + " INTEGER, "
                 + AppInfo.KEY_appOrder + " INTEGER )";
         db.execSQL(CREATE_TABLE_STUDENT);
@@ -57,9 +57,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(insertQuery,new String[]{appInfo.getUid()+"",appInfo.getAppName(),appInfo.getPackageName(),appInfo.getTimes()+"",order+""});
     }
 
-    public void onDelete(SQLiteDatabase db, int[] id) {//从表删除。
-        for (int i:id) {
-            db.execSQL("delete from " + AppInfo.TABLE + " where "+ AppInfo.KEY_uid + " = "+ i);
+    public void onDelete(SQLiteDatabase db, String[] packageNames) {//从表删除。
+        for (String i:packageNames) {
+            db.execSQL("delete from " + AppInfo.TABLE + " where "+ AppInfo.KEY_packageName + " = ?",new String[]{i});
         }
     }
 
@@ -67,12 +67,14 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("delete from " + AppInfo.TABLE);
     }
 
-    public void onUpdateTimes(SQLiteDatabase db, int id) {//更新次数
-        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_times+" = "+AppInfo.KEY_times + "+1 where " + AppInfo.KEY_uid + " = "+ id);
+    public void onUpdateTimes(SQLiteDatabase db, String packageName) {//更新次数
+        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_times+" = "+AppInfo.KEY_times
+                + "+1 where " + AppInfo.KEY_packageName + " = ?",new String[]{packageName});
     }
 
-    public void onUpdateOrder(SQLiteDatabase db, int id,int order) {//更新顺序
-        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_appOrder+" = "+ order + " where "+ AppInfo.KEY_uid + " = "+ id);
+    public void onUpdateOrder(SQLiteDatabase db, String packageName ,int order) {//更新顺序
+        db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_appOrder+" = "+ order
+                + " where "+ AppInfo.KEY_packageName + " = ?",new String[]{packageName});
     }
 
     public Cursor onQuery(SQLiteDatabase db, String appname) {//通过name查询

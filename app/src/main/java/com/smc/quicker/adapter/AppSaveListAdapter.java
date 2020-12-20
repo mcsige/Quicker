@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,15 +37,17 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
     private PackageManager pm;
     private ArrayList<AppInfo> appInfos;
     private Resources resources;
-    private ArrayList<View> views;
+    public ArrayList<View> views;
     private Context context;
+    private RecyclerView recyclerView;
 
-    public AppSaveListAdapter(PackageManager pm, ArrayList<AppInfo> appInfos, Resources resources,Context context) {
+    public AppSaveListAdapter(PackageManager pm, ArrayList<AppInfo> appInfos, Resources resources,Context context,RecyclerView recyclerView) {
         this.pm = pm;
         this.appInfos = appInfos;
         this.resources = resources;
         views = new ArrayList<>();
         this.context = context;
+        this.recyclerView = recyclerView;
     }
 
     @NonNull
@@ -55,15 +58,13 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
             for(View i : views){
                 i.setBackgroundColor(Color.TRANSPARENT);
             }
-            MainActivity.selectedItem = views.indexOf(v1);
+            MainActivity.selectedItem = recyclerView.getChildAdapterPosition(v1);
             v.setBackground(new ColorDrawable(resources.getColor(R.color.red)));
         });
         views.add(v);
         ViewHolder viewHolder = new ViewHolder(v);// 实例化viewholder
-        if(MainActivity.selectedItem!=MainActivity.IN_SELECTED && MainActivity.selectedItem==views.size()-1){
-            views.get(MainActivity.selectedItem-MainActivity.lastPosition)
-                    .setBackground(new ColorDrawable(resources.getColor(R.color.red)));
-        }
+        if(MainActivity.selectedItem!=MainActivity.IN_SELECTED && views.size()-1==MainActivity.selectedItem-MainActivity.lastPosition)
+            views.get(MainActivity.selectedItem-MainActivity.lastPosition).setBackground(new ColorDrawable(resources.getColor(R.color.red)));
         return viewHolder;
     }
 
@@ -77,7 +78,7 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
             e.printStackTrace();
             DBHelper dbHelper = new DBHelper(context, "appinfo.db", null, 3);//创建帮助器对象
             SQLiteDatabase database = dbHelper.getWritableDatabase();
-            dbHelper.onDelete(database,new int[]{appInfo.getUid()});
+            dbHelper.onDelete(database,new String[]{appInfo.getPackageName()});
             database.close();
             return;
         }

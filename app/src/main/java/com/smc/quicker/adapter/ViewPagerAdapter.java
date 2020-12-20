@@ -67,7 +67,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//重要
                 if (intent != null) {
                     database = dbHelper.getWritableDatabase();
-                    dbHelper.onUpdateTimes(database, selectedAppinfo.getUid());
+                    dbHelper.onUpdateTimes(database, selectedAppinfo.getPackageName());
                     database.close();
                     context.startActivity(intent);
                 } else {
