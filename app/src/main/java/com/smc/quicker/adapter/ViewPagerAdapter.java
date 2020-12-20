@@ -61,17 +61,16 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewPagerAdapter.ViewHolder holder, int position) {
         holder.gridView.setOnItemClickListener((parent, view, pos, id) -> {
-            AppInfo selectedAppinfo = appList.get(pos);
-            if(selectedAppinfo!=null) {
+            AppInfo selectedAppinfo = appList.get(position * col * row + pos);
+            if (selectedAppinfo != null) {
                 Intent intent = pm.getLaunchIntentForPackage(selectedAppinfo.getPackageName());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//重要
-                if(intent!=null) {
+                if (intent != null) {
                     database = dbHelper.getWritableDatabase();
                     dbHelper.onUpdateTimes(database, selectedAppinfo.getUid());
                     database.close();
                     context.startActivity(intent);
-                }
-                else{
+                } else {
                     Toast.makeText(context, "打开应用失败，是否已卸载", Toast.LENGTH_SHORT).show();
                 }
             }

@@ -4,20 +4,14 @@ import android.accessibilityservice.AccessibilityService;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.AppOpsManager;
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.PixelFormat;
 import android.os.Build;
-import android.os.IBinder;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Display;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,27 +19,20 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.GridView;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.smc.quicker.R;
-import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.adapter.AppStartListAdapter;
 import com.smc.quicker.adapter.ViewPagerAdapter;
 import com.smc.quicker.entity.AppInfo;
-import com.smc.quicker.receiver.VolumeBroadcastReceiver;
+import com.smc.quicker.receiver.FloatBroadcastReceiver;
 import com.smc.quicker.util.DBHelper;
 import com.smc.quicker.util.SharedPreferencesHelper;
 import com.smc.quicker.view.FloatingView;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class FloatingService extends AccessibilityService {
@@ -67,7 +54,7 @@ public class FloatingService extends AccessibilityService {
     public static int row;
     public static int col;
     private static SharedPreferencesHelper helper;
-    private VolumeBroadcastReceiver receiver;
+    private FloatBroadcastReceiver receiver;
     private int width,height;
     private ViewPager2 viewPager2;
 
@@ -132,14 +119,23 @@ public class FloatingService extends AccessibilityService {
             layoutParams_main.x = -layoutParams_main.width/2;
             layoutParams_main.y = -layoutParams_main.height/2;
             // 当悬浮窗显示的时候可以获取到焦点
-            layoutParams_main.flags = WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+            //windowManager flag https://blog.csdn.net/hnlgzb/article/details/108520716
+            layoutParams_main.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH //点击view外消失
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                     | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
             layoutParams_main.format = PixelFormat.RGBA_8888;
-            view_main.setOnClickListener(v -> {
-                if(windowManager!=null) {
-                    windowManager.removeView(view_main);
-                    flag = false;
+            view_main.setOnTouchListener((v, event) -> {
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_OUTSIDE:
+                        if(windowManager!=null && flag){
+                            windowManager.removeView(view_main);
+                            flag = false;
+                        }
+                        break;
                 }
+                return false;
             });
 //            Button lastPageBtn = view_main.findViewById(R.id.last_page_btn);
 //            Button nextPageBtn = view_main.findViewById(R.id.next_page_btn);
@@ -201,7 +197,7 @@ public class FloatingService extends AccessibilityService {
 
             // 将悬浮窗控件添加到WindowManager
             windowManager.addView(view, layoutParams);
-            SmoothToHide(layoutParams.x,-width/2);
+            SmoothToHide(layoutParams.x,width/2);
         }
     }
 
@@ -243,10 +239,16 @@ public class FloatingService extends AccessibilityService {
         while (appList.size()!=0 && appList.size()%(row*col)!=0)
             appList.add(null);
         viewPager2.setAdapter(new ViewPagerAdapter(this, appList,getPackageManager()));
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+            }
+        });
     }
 
     public static void removeView(){
-        if(windowManager!=null) {
+        if(windowManager!=null && flag) {
             windowManager.removeView(view_main);
             flag = false;
         }
@@ -268,9 +270,10 @@ public class FloatingService extends AccessibilityService {
     }
 
     public void registerReceiver() {
-        receiver = new VolumeBroadcastReceiver(view);
-        final IntentFilter homeFilter = new IntentFilter(VolumeBroadcastReceiver.VOLUME_CHANGED_ACTION);
-        registerReceiver(receiver, homeFilter);
+        receiver = new FloatBroadcastReceiver(view);
+        IntentFilter filter = new IntentFilter(FloatBroadcastReceiver.VOLUME_CHANGED_ACTION);
+        filter.addAction(FloatBroadcastReceiver.PACKAGE_REMOVED);
+        registerReceiver(receiver, filter);
     }
 
 

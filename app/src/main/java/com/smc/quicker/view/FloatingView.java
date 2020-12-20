@@ -35,7 +35,7 @@ public class FloatingView extends View {
         super.onDraw(canvas);
         // 随机颜色
         Random random = new Random();
-        int randColor = 0xff000000
+        int randColor = 0xaf000000
                 | (random.nextInt(0xaf))<<16
                 | (random.nextInt(0xaf))<<8
                 | (random.nextInt(0xaf));
