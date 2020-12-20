@@ -20,10 +20,12 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.smc.quicker.R;
+import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.adapter.AppStartListAdapter;
 import com.smc.quicker.adapter.ViewPagerAdapter;
 import com.smc.quicker.entity.AppInfo;
@@ -177,8 +179,6 @@ public class FloatingService extends AccessibilityService {
                             int releaseY = (int)event.getRawY();
                             double dis = (downX-releaseX)*(downX-releaseX)+(downY-releaseY)*(downY-releaseY);
                             if(Math.sqrt(dis)<5.0 && !flag) {
-                                windowManager.addView(view_main, layoutParams_main);
-                                flag = true;
                                 initView();
                             }
                             if (releaseX < width-releaseX) {
@@ -236,15 +236,16 @@ public class FloatingService extends AccessibilityService {
             } while (cursor.moveToNext());
         }
         database.close();
-        while (appList.size()!=0 && appList.size()%(row*col)!=0)
-            appList.add(null);
-        viewPager2.setAdapter(new ViewPagerAdapter(this, appList,getPackageManager()));
-        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-            }
-        });
+        if(appList.size()!=0){
+            windowManager.addView(view_main, layoutParams_main);
+            flag = true;
+            while (appList.size()%(row*col)!=0)
+                appList.add(null);
+            viewPager2.setAdapter(new ViewPagerAdapter(this, appList,getPackageManager()));
+        }
+        else{
+            Toast.makeText(this, "您还未添加任何应用哦", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static void removeView(){

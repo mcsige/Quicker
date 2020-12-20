@@ -53,7 +53,7 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.appinfo_item, parent, false);// 实例化展示的view
         v.setOnClickListener(v1 -> {
             for(View i : views){
-                i.setBackgroundColor(Color.WHITE);
+                i.setBackgroundColor(Color.TRANSPARENT);
             }
             MainActivity.selectedItem = views.indexOf(v1);
             v.setBackground(new ColorDrawable(resources.getColor(R.color.red)));
