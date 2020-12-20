@@ -1,39 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <GridView
-        android:id="@+id/gridview"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewpager2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/gray"
-        android:numColumns="auto_fit"
-        android:padding="5dp"
-        android:scaleType="fitXY"
-        android:horizontalSpacing="3dp"
-        android:verticalSpacing="3dp" />
+        android:layout_height="match_parent"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/last_page_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/last_page" />
-
-        <Button
-            android:id="@+id/next_page_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/next_page" />
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

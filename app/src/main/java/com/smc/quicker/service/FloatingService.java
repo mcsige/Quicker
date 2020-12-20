@@ -31,10 +31,12 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.smc.quicker.R;
 import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.adapter.AppStartListAdapter;
+import com.smc.quicker.adapter.ViewPagerAdapter;
 import com.smc.quicker.entity.AppInfo;
 import com.smc.quicker.receiver.VolumeBroadcastReceiver;
 import com.smc.quicker.util.DBHelper;
@@ -50,10 +52,10 @@ public class FloatingService extends AccessibilityService {
 
     private int x,y,downX,downY;
     private FloatingView view;
-    private View view_main;
-    private WindowManager windowManager;
+    private static View view_main;
+    private static WindowManager windowManager;
     private WindowManager.LayoutParams layoutParams,layoutParams_main;
-    private boolean flag;
+    private static boolean flag;
     private Display display;
     private GridView mGridView;
     private AppStartListAdapter adapter;
@@ -62,11 +64,12 @@ public class FloatingService extends AccessibilityService {
     private ArrayList<AppInfo> appList;
     public static int curPage = 0;
     private static int totalPage;
-    private static int row;
-    private static int col;
+    public static int row;
+    public static int col;
     private static SharedPreferencesHelper helper;
     private VolumeBroadcastReceiver receiver;
     private int width,height;
+    private ViewPager2 viewPager2;
 
     @Override
     public void onCreate() {
@@ -138,16 +141,16 @@ public class FloatingService extends AccessibilityService {
                     flag = false;
                 }
             });
-            Button lastPageBtn = view_main.findViewById(R.id.last_page_btn);
-            Button nextPageBtn = view_main.findViewById(R.id.next_page_btn);
-            lastPageBtn.setOnClickListener(v -> {
-                curPage = curPage==0?0:curPage-1;
-                getShortcut();
-            });
-            nextPageBtn.setOnClickListener(v -> {
-                curPage = curPage+1==totalPage?curPage:curPage+1;
-                getShortcut();
-            });
+//            Button lastPageBtn = view_main.findViewById(R.id.last_page_btn);
+//            Button nextPageBtn = view_main.findViewById(R.id.next_page_btn);
+//            lastPageBtn.setOnClickListener(v -> {
+//                curPage = curPage==0?0:curPage-1;
+//                getShortcut();
+//            });
+//            nextPageBtn.setOnClickListener(v -> {
+//                curPage = curPage+1==totalPage?curPage:curPage+1;
+//                getShortcut();
+//            });
             view.setOnTouchListener((v, event) -> {
                 display = windowManager.getDefaultDisplay();
                 width = display.getWidth();
@@ -221,33 +224,10 @@ public class FloatingService extends AccessibilityService {
 
     private void initView() {
         view_main.setFocusable(true);
-        mGridView = view_main.findViewById(R.id.gridview);
-        mGridView.setOnItemClickListener((parent, view, position, id) -> {
-            AppInfo selectedAppinfo = appList.get(position);
-            if(selectedAppinfo!=null) {
-                Intent intent = getPackageManager().getLaunchIntentForPackage(selectedAppinfo.getPackageName());
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//重要
-                if(intent!=null) {
-                    database = dbHelper.getWritableDatabase();
-                    dbHelper.onUpdateTimes(database, selectedAppinfo.getUid());
-                    database.close();
-                    FloatingService.this.startActivity(intent);
-                }
-                else{
-                    Toast.makeText(this, "打开应用失败，是否已卸载", Toast.LENGTH_SHORT).show();
-                }
-            }
-            windowManager.removeView(view_main);
-            flag = false;
-        });
-        mGridView.setNumColumns(col);
-        getShortcut();
-    }
-
-    private void getShortcut(){
+        viewPager2 = view_main.findViewById(R.id.viewpager2);
         appList = new ArrayList<>();
         database = dbHelper.getWritableDatabase();
-        Cursor cursor = dbHelper.onListPage(database,curPage,col*row);
+        Cursor cursor = dbHelper.onList(database);
         if (cursor.moveToFirst()) {
             do {
                 AppInfo appInfo1 = new AppInfo();
@@ -260,16 +240,22 @@ public class FloatingService extends AccessibilityService {
             } while (cursor.moveToNext());
         }
         database.close();
-        while (appList.size()<row*col)
+        while (appList.size()!=0 && appList.size()%(row*col)!=0)
             appList.add(null);
-        adapter = new AppStartListAdapter(mGridView,row,this, appList,getPackageManager());
-        mGridView.setAdapter(adapter);
+        viewPager2.setAdapter(new ViewPagerAdapter(this, appList,getPackageManager()));
+    }
+
+    public static void removeView(){
+        if(windowManager!=null) {
+            windowManager.removeView(view_main);
+            flag = false;
+        }
     }
 
     public static void count(){
         database = dbHelper.getWritableDatabase();
         int dataCount = dbHelper.getCount(database);
-        totalPage =dataCount%(col*row)==0?dataCount/(col*row):dataCount/(col*row)+1;
+        totalPage = dataCount%(col*row)==0?dataCount/(col*row):dataCount/(col*row)+1;
         database.close();
     }
 

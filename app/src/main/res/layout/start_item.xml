@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/float_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gray"
+        android:numColumns="auto_fit"
+        android:padding="5dp"
+        android:scaleType="fitXY"
+        android:horizontalSpacing="3dp"
+        android:verticalSpacing="3dp" />
+
+</RelativeLayout>
+

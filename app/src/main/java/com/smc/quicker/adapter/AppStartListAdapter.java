@@ -3,8 +3,6 @@ package com.smc.quicker.adapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +54,7 @@ public class AppStartListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = layoutInflater.inflate(R.layout.grid_appinfo_list, null);
+            convertView = layoutInflater.inflate(R.layout.grid_appinfo_item, null);
             holder = new ViewHolder();
             holder.appName = convertView.findViewById(R.id.grid_app_name);
             holder.appImage = convertView.findViewById(R.id.grid_app_image);
@@ -66,10 +64,7 @@ public class AppStartListAdapter extends BaseAdapter {
         }
         AppInfo appInfo = appInfoList.get(position);
         if (appInfo != null) {
-            if(appInfo.getAppName().length()>10)
-                holder.appName.setText(appInfo.getAppName().substring(0,10)+"..");
-            else
-                holder.appName.setText(appInfo.getAppName());
+            holder.appName.setText(appInfo.getAppName());
             try {
                 holder.appImage.setImageDrawable(pm.getApplicationIcon(appInfo.getPackageName()));
             } catch (PackageManager.NameNotFoundException e) {
