@@ -72,7 +72,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "+1 where " + AppInfo.KEY_packageName + " = ?",new String[]{packageName});
     }
 
-    public void onUpdateOrder(SQLiteDatabase db, String packageName ,int order,boolean flag) {//更新顺序
+    public void onUpdateOrder(SQLiteDatabase db, String packageName ,boolean flag ,int order) {//更新顺序
         if(flag)
             db.execSQL("update "+AppInfo.TABLE+" set " + AppInfo.KEY_appOrder+" = "+ AppInfo.KEY_appOrder
                     + "+1 where "+ AppInfo.KEY_appOrder + " >= "+order);

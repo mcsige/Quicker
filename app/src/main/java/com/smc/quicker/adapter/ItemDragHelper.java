@@ -2,6 +2,7 @@ package com.smc.quicker.adapter;
 
 import android.app.Service;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Vibrator;
@@ -107,11 +108,32 @@ public class ItemDragHelper extends ItemTouchHelper.Callback {
     @Override
     public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
-        viewHolder.itemView.setBackgroundColor(0);
-        toPos = viewHolder.getAdapterPosition();
-        database = dbHelper.getWritableDatabase();
-        //位置已经在move中变化
-        dbHelper.onUpdateOrder(database,appList.get(toPos).getPackageName(),appList.get(fromPos).getAppOrder(),fromPos>toPos);
-        database.close();
+        viewHolder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        try {
+            toPos = viewHolder.getAdapterPosition();
+            database = dbHelper.getWritableDatabase();
+            //位置已经在move中变化
+            //true 向上移 false 向下移
+            boolean flag = fromPos>toPos;
+            dbHelper.onUpdateOrder(database,appList.get(toPos).getPackageName(),flag,
+                    flag?appList.get(toPos+1).getAppOrder():appList.get(toPos-1).getAppOrder());
+            Cursor cursor = dbHelper.onList(database);
+            appList.clear();
+            if (cursor.moveToFirst()) {
+                do {
+                    AppInfo appInfo1 = new AppInfo();
+                    appInfo1.setUid(Integer.parseInt(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_uid))));
+                    appInfo1.setAppName(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_appName)));
+                    appInfo1.setPackageName(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_packageName)));
+                    appInfo1.setTimes(Integer.parseInt(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_times))));
+                    appInfo1.setAppOrder(Integer.parseInt(cursor.getString(cursor.getColumnIndex(AppInfo.KEY_appOrder))));
+                    appList.add(appInfo1);
+                } while (cursor.moveToNext());
+            }
+            database.close();
+            adapter.notifyItemRangeChanged(0,appList.size());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

@@ -34,13 +34,11 @@ import com.smc.quicker.util.DBHelper;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    public final static int IN_SELECTED = -1;
     private static ArrayList<AppInfo> appList;
-    RecyclerView mRecyclerView;
+    private RecyclerView mRecyclerView;
     static AppSaveListAdapter adapter;
     private DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
     private SQLiteDatabase database;    //用于创建数据库对象
-    public static int selectedItem = IN_SELECTED;
     private static int order;
     private LinearLayoutManager mLayoutManager;
     private static LoadingDailog dialog;
@@ -56,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false)
                 .setCancelOutside(false);
         dialog = loadBuilder.create();
-        dialog.show();
         startFloatingService();
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         Button openListBtn = findViewById(R.id.open_list);
@@ -85,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
         } else {
             if(!FloatingService.isRunService(this)) {
+                dialog.show();
                 startService(new Intent(this, FloatingService.class));
             }
         }
@@ -175,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
                 database.close();
                 adapter.clear();
                 getAppInfoList();
-                selectedItem = IN_SELECTED;
                 FloatingService.count();
                 FloatingService.curPage = 0;
                 break;
