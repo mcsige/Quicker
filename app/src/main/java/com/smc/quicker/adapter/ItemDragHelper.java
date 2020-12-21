@@ -25,6 +25,7 @@ public class ItemDragHelper extends ItemTouchHelper.Callback {
     private DBHelper dbHelper;
     private SQLiteDatabase database;
     private Context context;
+    private int fromPos,toPos;
 
     public ItemDragHelper(RecyclerView.Adapter adapter, List<AppInfo> appList, DBHelper dbHelper, Context context){
         this.adapter = adapter;
@@ -62,13 +63,6 @@ public class ItemDragHelper extends ItemTouchHelper.Callback {
                 Collections.swap(appList, i, i - 1);
             }
         }
-        database = dbHelper.getWritableDatabase();
-        int tmp = appList.get(fromPosition).getAppOrder();
-        dbHelper.onUpdateOrder(database,appList.get(fromPosition).getPackageName(),appList.get(toPosition).getAppOrder());
-        for(AppInfo a:appList)
-            Log.e("smc",a.toString());
-        dbHelper.onUpdateOrder(database,appList.get(toPosition).getPackageName(),tmp);
-        database.close();
         adapter.notifyItemMoved(fromPosition, toPosition);
         return true;
     }
@@ -91,6 +85,9 @@ public class ItemDragHelper extends ItemTouchHelper.Callback {
      */
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+        if(actionState == ItemTouchHelper.ACTION_STATE_DRAG){
+            fromPos = viewHolder.getAdapterPosition();
+        }
         if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
             viewHolder.itemView.setBackgroundColor(Color.LTGRAY);
             //获取系统震动服务
@@ -111,5 +108,10 @@ public class ItemDragHelper extends ItemTouchHelper.Callback {
     public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
         viewHolder.itemView.setBackgroundColor(0);
+        toPos = viewHolder.getAdapterPosition();
+        database = dbHelper.getWritableDatabase();
+        //位置已经在move中变化
+        dbHelper.onUpdateOrder(database,appList.get(toPos).getPackageName(),appList.get(fromPos).getAppOrder(),fromPos>toPos);
+        database.close();
     }
 }
