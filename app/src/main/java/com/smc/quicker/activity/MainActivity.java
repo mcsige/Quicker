@@ -24,6 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.android.tu.loadingdialog.LoadingDailog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.smc.quicker.adapter.AppSaveListAdapter;
 import com.smc.quicker.entity.AppInfo;
@@ -31,6 +33,8 @@ import com.smc.quicker.service.FloatingService;
 import com.smc.quicker.R;
 import com.smc.quicker.util.DBHelper;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     public final static int IN_SELECTED = -1;
@@ -44,12 +48,19 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager mLayoutManager;
     private int lastOffset;
     public static int lastPosition;
+    private static LoadingDailog dialog;
 
     @SuppressLint("ShowToast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        LoadingDailog.Builder loadBuilder = new LoadingDailog.Builder(MainActivity.this)
+                .setMessage("加载中...")
+                .setCancelable(false)
+                .setCancelOutside(false);
+        dialog = loadBuilder.create();
+        dialog.show();
         startFloatingService();
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         //底部菜单
@@ -130,6 +141,11 @@ public class MainActivity extends AppCompatActivity {
                 startService(new Intent(this, FloatingService.class));
             }
         }
+    }
+
+    public static void dialogDismiss(){
+        if(dialog!=null && dialog.isShowing())
+            dialog.dismiss();
     }
 
     @Override

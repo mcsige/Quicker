@@ -43,21 +43,7 @@ public class PackageListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_list);
-        if(FloatingService.packageList==null) {
-            List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
-            appList = new ArrayList<>();
-            for (PackageInfo packageInfo : packageInfos) {
-                if (getPackageManager().getLaunchIntentForPackage(packageInfo.packageName) != null)
-                    appList.add(new AppInfo(packageInfo.packageName,
-                            packageInfo.applicationInfo.loadLabel(getPackageManager()).toString(), packageInfo.applicationInfo.uid, 0, 0));
-            }
-        }
-        else{
-            appList = new ArrayList<>(FloatingService.packageList);
-        }
-        adapter = new PackageListAdapter(PackageListActivity.this, R.layout.app_item, appList,getPackageManager());
         listView = findViewById(R.id.mListView);
-        listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view, position, id) -> {
             AppInfo appInfo = appList.get(position);
             Intent intent = new Intent(PackageListActivity.this,MainActivity.class);
@@ -65,6 +51,7 @@ public class PackageListActivity extends AppCompatActivity {
             setResult(RESULT_OK,intent);
             finish();
         });
+        initView();
         appNames = new String[appList.size()];
         int i = 0;
         for(AppInfo appInfo:appList){
@@ -78,6 +65,29 @@ public class PackageListActivity extends AppCompatActivity {
         myAutoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
             getSearchPackage(myAutoCompleteTextView.getText().toString());
         });
+    }
+
+    @Override
+    protected void onStart() {
+        initView();
+        super.onStart();
+    }
+
+    private void initView(){
+        if(FloatingService.packageList==null) {
+            List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
+            appList = new ArrayList<>();
+            for (PackageInfo packageInfo : packageInfos) {
+                if (getPackageManager().getLaunchIntentForPackage(packageInfo.packageName) != null)
+                    appList.add(new AppInfo(packageInfo.packageName,
+                            packageInfo.applicationInfo.loadLabel(getPackageManager()).toString(), packageInfo.applicationInfo.uid, 0, 0));
+            }
+        }
+        else{
+            appList = new ArrayList<>(FloatingService.packageList);
+        }
+        adapter = new PackageListAdapter(PackageListActivity.this, R.layout.app_item, appList,getPackageManager());
+        listView.setAdapter(adapter);
     }
 
     public void getSearchPackage(String searchPackageName){

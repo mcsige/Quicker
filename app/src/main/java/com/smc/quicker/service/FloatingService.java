@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -63,19 +64,26 @@ public class FloatingService extends AccessibilityService {
     private FloatBroadcastReceiver receiver;
     private int width,height;
     private ViewPager2 viewPager2;
+    private static PackageManager pm;
 
     @Override
     public void onCreate() {
         showFloatingWindow();
         registerReceiver();
-        List<PackageInfo> packageInfos = getPackageManager().getInstalledPackages(PackageManager.GET_ACTIVITIES);
+        pm = getPackageManager();
+        new Thread(FloatingService::initPackageList).start();
+        super.onCreate();
+    }
+
+    public static void initPackageList(){
+        List<PackageInfo> packageInfos = pm.getInstalledPackages(PackageManager.GET_ACTIVITIES);
         packageList = new ArrayList<>();
         for(PackageInfo packageInfo : packageInfos){
-            if(getPackageManager().getLaunchIntentForPackage(packageInfo.packageName)!=null)
+            if(pm.getLaunchIntentForPackage(packageInfo.packageName)!=null)
                 packageList.add(new AppInfo(packageInfo.packageName,
-                        packageInfo.applicationInfo.loadLabel(getPackageManager()).toString(),packageInfo.applicationInfo.uid,0,0));
+                        packageInfo.applicationInfo.loadLabel(pm).toString(),packageInfo.applicationInfo.uid,0,0));
         }
-        super.onCreate();
+        MainActivity.dialogDismiss();
     }
 
     @Override
@@ -284,10 +292,13 @@ public class FloatingService extends AccessibilityService {
     public void registerReceiver() {
         receiver = new FloatBroadcastReceiver(view);
         IntentFilter filter = new IntentFilter(FloatBroadcastReceiver.VOLUME_CHANGED_ACTION);
-        filter.addAction(FloatBroadcastReceiver.PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        //很重要
+        filter.addDataScheme("package");
+        filter.addDataScheme("audio");
         registerReceiver(receiver, filter);
     }
-
 
     /**
      * 判断服务是否在运行
