@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.smc.quicker.R;
+import com.smc.quicker.activity.MainActivity;
 import com.smc.quicker.entity.AppInfo;
 import com.smc.quicker.service.FloatingService;
 import com.smc.quicker.util.DBHelper;
@@ -70,6 +71,8 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                     dbHelper.onUpdateTimes(database, selectedAppinfo.getPackageName());
                     database.close();
                     context.startActivity(intent);
+                    MainActivity.updateTimes(position * col * row + pos);
+                    this.notifyItemChanged(position);
                 } else {
                     Toast.makeText(context, "打开应用失败，是否已卸载", Toast.LENGTH_SHORT).show();
                 }

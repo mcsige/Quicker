@@ -5,16 +5,14 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -27,28 +25,26 @@ import android.widget.Toast;
 
 import com.android.tu.loadingdialog.LoadingDailog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.smc.quicker.adapter.ItemDragHelper;
 import com.smc.quicker.adapter.AppSaveListAdapter;
 import com.smc.quicker.entity.AppInfo;
 import com.smc.quicker.service.FloatingService;
 import com.smc.quicker.R;
 import com.smc.quicker.util.DBHelper;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     public final static int IN_SELECTED = -1;
-    private ArrayList<AppInfo> appList;
+    private static ArrayList<AppInfo> appList;
     RecyclerView mRecyclerView;
-    AppSaveListAdapter adapter;
+    static AppSaveListAdapter adapter;
     private DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
     private SQLiteDatabase database;    //用于创建数据库对象
     public static int selectedItem = IN_SELECTED;
-    private int order;
+    private static int order;
     private LinearLayoutManager mLayoutManager;
-    private int lastOffset;
-    public static int lastPosition;
     private static LoadingDailog dialog;
+    private ItemTouchHelper itemTouchHelper;
 
     @SuppressLint("ShowToast")
     @Override
@@ -63,52 +59,6 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
         startFloatingService();
         mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        //底部菜单
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_up, R.id.navigation_delete, R.id.navigation_down)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(navView, navController);
-        //------------------------------------------------
-
-        navView.setOnNavigationItemSelectedListener(item -> {
-            if(selectedItem>=0) {
-                database = dbHelper.getWritableDatabase();
-                switch (item.toString()) {
-                    case "上移":
-                        if(selectedItem>0) {
-                            int tmp = appList.get(selectedItem).getAppOrder();
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem).getPackageName(), appList.get(selectedItem - 1).getAppOrder());
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem-1).getPackageName(), tmp);
-                            selectedItem--;
-                        }
-                        break;
-                    case "删除":
-                        dbHelper.onDelete(database, new String[]{appList.get(selectedItem).getPackageName()});
-                        FloatingService.count();
-                        Toast.makeText(MainActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
-                        if(selectedItem==0)
-                            selectedItem = IN_SELECTED;
-                        break;
-                    case "下移":
-                        if(selectedItem<appList.size()-1) {
-                            int tmp = appList.get(selectedItem).getAppOrder();
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem).getPackageName(), appList.get(selectedItem + 1).getAppOrder());
-                            dbHelper.onUpdateOrder(database, appList.get(selectedItem+1).getPackageName(), tmp);
-                            selectedItem++;
-                        }
-                        break;
-                }
-                database.close();
-                getAppInfoList();
-            }
-            return true;
-        });
-
         Button openListBtn = findViewById(R.id.open_list);
         dbHelper = new DBHelper(MainActivity.this, "appinfo.db", null, 3);//创建帮助器对象
         openListBtn.setOnClickListener(v -> {
@@ -116,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent,1);
         });
         mRecyclerView = findViewById(R.id.saveAppList);
+        appList = new ArrayList<>();
+        getAppInfoList();
+        initListView();
     }
 
     @Override
@@ -124,12 +77,6 @@ public class MainActivity extends AppCompatActivity {
         home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         home.addCategory(Intent.CATEGORY_HOME);
         startActivity(home);
-    }
-
-    @Override
-    protected void onStart() {
-        getAppInfoList();
-        super.onStart();
     }
 
     public void startFloatingService() {
@@ -144,8 +91,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void dialogDismiss(){
-        if(dialog!=null && dialog.isShowing())
+        if(dialog!=null && dialog.isShowing()) {
             dialog.dismiss();
+        }
     }
 
     @Override
@@ -164,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 database = dbHelper.getWritableDatabase();
                 dbHelper.onInsert(database,appInfo,order);
                 database.close();
+                adapter.insert(appInfo);
                 getAppInfoList();
                 FloatingService.count();
                 Toast.makeText(this, "添加成功", Toast.LENGTH_SHORT).show();
@@ -176,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     public void getAppInfoList() {//获取全部数据
         database = dbHelper.getWritableDatabase();
         Cursor cursor = dbHelper.onList(database);
-        appList = new ArrayList<>();
+        appList.clear();
         if (cursor.moveToFirst()) {
             do {
                 AppInfo appInfo1 = new AppInfo();
@@ -193,35 +142,18 @@ public class MainActivity extends AppCompatActivity {
             order = appList.get(appList.size()-1).getAppOrder()+1;
         else
             order = 0;
-        initListView();
     }
 
     public void initListView(){
-        getPositionAndOffset();
-        adapter = new AppSaveListAdapter(getPackageManager(),appList,getResources(),this,mRecyclerView);
+        adapter = new AppSaveListAdapter(getPackageManager(),appList,this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(adapter);
-        scrollToPosition();
+        itemTouchHelper = new ItemTouchHelper(new ItemDragHelper(adapter,appList,dbHelper,this));
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
-    /** * 记录RecyclerView当前位置 */
-    private void getPositionAndOffset() {
-        if(mLayoutManager!=null) {
-            View topView = mLayoutManager.getChildAt(0);
-            if (topView != null) {
-                //获取与该view的顶部的偏移量
-                lastOffset = topView.getTop();
-                //得到该View的数组位置
-                lastPosition = mLayoutManager.getPosition(topView);
-            }
-        }
-    }
-
-    /** * 让RecyclerView滚动到指定位置 */
-    private void scrollToPosition() {
-        if(mRecyclerView.getLayoutManager() != null && lastPosition >= 0) {
-            ((LinearLayoutManager) mRecyclerView.getLayoutManager()).scrollToPositionWithOffset(lastPosition, lastOffset);
-        }
+    public static void updateTimes(int position){
+        adapter.updateTimes(position);
     }
 
     @Override
@@ -241,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 database = dbHelper.getWritableDatabase();
                 dbHelper.onClear(database);
                 database.close();
+                adapter.clear();
                 getAppInfoList();
                 selectedItem = IN_SELECTED;
                 FloatingService.count();

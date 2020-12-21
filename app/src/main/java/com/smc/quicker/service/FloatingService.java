@@ -44,7 +44,7 @@ import java.util.List;
 public class FloatingService extends AccessibilityService {
 
     private int x,y,downX,downY;
-    private FloatingView view;
+    private static FloatingView view;
     private static View view_main;
     private static WindowManager windowManager;
     private WindowManager.LayoutParams layoutParams,layoutParams_main;
@@ -151,6 +151,7 @@ public class FloatingService extends AccessibilityService {
                 switch (event.getAction()){
                     case MotionEvent.ACTION_OUTSIDE:
                         if(windowManager!=null && flag){
+                            view.setVisibility(View.VISIBLE);
                             windowManager.removeView(view_main);
                             flag = false;
                         }
@@ -158,16 +159,6 @@ public class FloatingService extends AccessibilityService {
                 }
                 return false;
             });
-//            Button lastPageBtn = view_main.findViewById(R.id.last_page_btn);
-//            Button nextPageBtn = view_main.findViewById(R.id.next_page_btn);
-//            lastPageBtn.setOnClickListener(v -> {
-//                curPage = curPage==0?0:curPage-1;
-//                getShortcut();
-//            });
-//            nextPageBtn.setOnClickListener(v -> {
-//                curPage = curPage+1==totalPage?curPage:curPage+1;
-//                getShortcut();
-//            });
             view.setOnTouchListener((v, event) -> {
                 display = windowManager.getDefaultDisplay();
                 width = display.getWidth();
@@ -216,6 +207,7 @@ public class FloatingService extends AccessibilityService {
 
             // 将悬浮窗控件添加到WindowManager
             windowManager.addView(view, layoutParams);
+            view.setVisibility(View.VISIBLE);
             SmoothToHide(layoutParams.x,width/2);
         }
     }
@@ -257,6 +249,7 @@ public class FloatingService extends AccessibilityService {
         database.close();
         if(appList.size()!=0){
             windowManager.addView(view_main, layoutParams_main);
+            view.setVisibility(View.INVISIBLE);
             flag = true;
             while (appList.size()%(row*col)!=0)
                 appList.add(null);
@@ -269,6 +262,7 @@ public class FloatingService extends AccessibilityService {
 
     public static void removeView(){
         if(windowManager!=null && flag) {
+            view.setVisibility(View.VISIBLE);
             windowManager.removeView(view_main);
             flag = false;
         }
@@ -296,7 +290,6 @@ public class FloatingService extends AccessibilityService {
         filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
         //很重要
         filter.addDataScheme("package");
-        filter.addDataScheme("audio");
         registerReceiver(receiver, filter);
     }
 

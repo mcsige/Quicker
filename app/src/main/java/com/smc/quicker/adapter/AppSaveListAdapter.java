@@ -36,35 +36,19 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
 
     private PackageManager pm;
     private ArrayList<AppInfo> appInfos;
-    private Resources resources;
-    public ArrayList<View> views;
     private Context context;
-    private RecyclerView recyclerView;
 
-    public AppSaveListAdapter(PackageManager pm, ArrayList<AppInfo> appInfos, Resources resources,Context context,RecyclerView recyclerView) {
+    public AppSaveListAdapter(PackageManager pm, ArrayList<AppInfo> appInfos,Context context) {
         this.pm = pm;
         this.appInfos = appInfos;
-        this.resources = resources;
-        views = new ArrayList<>();
         this.context = context;
-        this.recyclerView = recyclerView;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.appinfo_item, parent, false);// 实例化展示的view
-        v.setOnClickListener(v1 -> {
-            for(View i : views){
-                i.setBackgroundColor(Color.TRANSPARENT);
-            }
-            MainActivity.selectedItem = recyclerView.getChildAdapterPosition(v1);
-            v.setBackground(new ColorDrawable(resources.getColor(R.color.red)));
-        });
-        views.add(v);
         ViewHolder viewHolder = new ViewHolder(v);// 实例化viewholder
-        if(MainActivity.selectedItem!=MainActivity.IN_SELECTED && views.size()-1==MainActivity.selectedItem-MainActivity.lastPosition)
-            views.get(MainActivity.selectedItem-MainActivity.lastPosition).setBackground(new ColorDrawable(resources.getColor(R.color.red)));
         return viewHolder;
     }
 
@@ -80,6 +64,8 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
             SQLiteDatabase database = dbHelper.getWritableDatabase();
             dbHelper.onDelete(database,new String[]{appInfo.getPackageName()});
             database.close();
+            appInfos.remove(position);
+            this.notifyItemRemoved(position);
             return;
         }
         holder.appName.setText(appInfo.getAppName());
@@ -89,6 +75,22 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
     @Override
     public int getItemCount() {
         return appInfos == null ? 0 : appInfos.size();
+    }
+
+    public void insert(AppInfo appInfo){
+        appInfos.add(appInfo);
+        this.notifyItemInserted(appInfos.size()-1);
+    }
+
+    public void clear(){
+        int count = appInfos.size();
+        appInfos.clear();
+        this.notifyItemRangeRemoved(0,count);
+    }
+
+    public void updateTimes(int position){
+        appInfos.get(position).setTimes(appInfos.get(position).getTimes()+1);
+        this.notifyItemChanged(position);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
