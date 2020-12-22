@@ -63,6 +63,13 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void onDelete(SQLiteDatabase db, int[] uids) {//从表删除。
+        for (int i:uids) {
+            db.execSQL("delete from " + AppInfo.TABLE + " where "+ AppInfo.KEY_uid + " = "+i);
+        }
+    }
+
+
     public void onClear(SQLiteDatabase db) {//从表删除。
         db.execSQL("delete from " + AppInfo.TABLE);
     }

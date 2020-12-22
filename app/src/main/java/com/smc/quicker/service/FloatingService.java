@@ -3,10 +3,12 @@ package com.smc.quicker.service;
 import android.accessibilityservice.AccessibilityService;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -14,6 +16,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -65,6 +68,9 @@ public class FloatingService extends AccessibilityService {
     private int width,height;
     private ViewPager2 viewPager2;
     private static PackageManager pm;
+
+    private static final int STYLE_HORIZONTAL = 0;
+    private static final int STYLE_VERTICAL = 1;
 
     @Override
     public void onCreate() {
@@ -135,10 +141,6 @@ public class FloatingService extends AccessibilityService {
             } else {
                 layoutParams_main.type = WindowManager.LayoutParams.TYPE_PHONE;
             }
-            layoutParams_main.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-            layoutParams_main.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            layoutParams_main.x = -layoutParams_main.width/2;
-            layoutParams_main.y = -layoutParams_main.height/2;
             // 当悬浮窗显示的时候可以获取到焦点
             //windowManager flag https://blog.csdn.net/hnlgzb/article/details/108520716
             layoutParams_main.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -189,7 +191,7 @@ public class FloatingService extends AccessibilityService {
                             int releaseY = (int)event.getRawY();
                             double dis = (downX-releaseX)*(downX-releaseX)+(downY-releaseY)*(downY-releaseY);
                             if(Math.sqrt(dis)<5.0 && !flag) {
-                                initView();
+                                initView(STYLE_HORIZONTAL);
                             }
                             if (releaseX < width-releaseX) {
                                 SmoothToHide(layoutParams.x,-width/2);
@@ -229,7 +231,7 @@ public class FloatingService extends AccessibilityService {
             animator.start();
     }
 
-    private void initView() {
+    private void initView(int style) {
         view_main.setFocusable(true);
         viewPager2 = view_main.findViewById(R.id.viewpager2);
         appList = new ArrayList<>();
@@ -247,6 +249,22 @@ public class FloatingService extends AccessibilityService {
             } while (cursor.moveToNext());
         }
         database.close();
+        switch (style){
+            case STYLE_HORIZONTAL:
+                layoutParams_main.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                layoutParams_main.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                layoutParams_main.x = -layoutParams_main.width/2;
+                layoutParams_main.y = -layoutParams_main.height/2;
+                viewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+                break;
+            case STYLE_VERTICAL://暂未搞定
+                layoutParams_main.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                layoutParams_main.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                layoutParams_main.x = width/2;
+                layoutParams_main.y = -layoutParams_main.height/2;
+                viewPager2.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
+                break;
+        }
         if(appList.size()!=0){
             windowManager.addView(view_main, layoutParams_main);
             view.setVisibility(View.INVISIBLE);
@@ -284,7 +302,7 @@ public class FloatingService extends AccessibilityService {
     }
 
     public void registerReceiver() {
-        receiver = new FloatBroadcastReceiver(view);
+        receiver = new FloatBroadcastReceiver(view,this);
         IntentFilter filter = new IntentFilter(FloatBroadcastReceiver.VOLUME_CHANGED_ACTION);
         filter.addAction(Intent.ACTION_PACKAGE_ADDED);
         filter.addAction(Intent.ACTION_PACKAGE_REMOVED);

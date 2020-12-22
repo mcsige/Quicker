@@ -34,9 +34,9 @@ import com.smc.quicker.util.DBHelper;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private static ArrayList<AppInfo> appList;
+    public static ArrayList<AppInfo> appList;
     private RecyclerView mRecyclerView;
-    static AppSaveListAdapter adapter;
+    public static AppSaveListAdapter adapter;
     private DBHelper dbHelper;    //用于创建帮助器对象（处理数据库相关操作）
     private SQLiteDatabase database;    //用于创建数据库对象
     private static int order;
@@ -153,6 +153,8 @@ public class MainActivity extends AppCompatActivity {
     public static void updateTimes(int position){
         adapter.updateTimes(position);
     }
+
+    public static void uninstall(int uid){adapter.uninstall(uid);}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

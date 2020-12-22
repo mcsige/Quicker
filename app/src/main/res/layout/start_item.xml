@@ -7,14 +7,14 @@
 
     <GridView
         android:id="@+id/gridview"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@color/gray"
         android:numColumns="auto_fit"
-        android:padding="5dp"
+        android:padding="7dp"
         android:scaleType="fitXY"
-        android:horizontalSpacing="3dp"
-        android:verticalSpacing="3dp" />
+        android:horizontalSpacing="5dp"
+        android:verticalSpacing="5dp" />
 
 </RelativeLayout>
 

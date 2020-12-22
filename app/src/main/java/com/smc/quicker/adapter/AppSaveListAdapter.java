@@ -65,7 +65,6 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
             dbHelper.onDelete(database,new String[]{appInfo.getPackageName()});
             database.close();
             appInfos.remove(position);
-            this.notifyItemRemoved(position);
             return;
         }
         holder.appName.setText(appInfo.getAppName());
@@ -91,6 +90,16 @@ public class AppSaveListAdapter extends RecyclerView.Adapter<AppSaveListAdapter.
     public void updateTimes(int position){
         appInfos.get(position).setTimes(appInfos.get(position).getTimes()+1);
         this.notifyItemChanged(position);
+    }
+
+    public void uninstall(int uid){
+        for(int i = 0;i<appInfos.size();i++){
+            if(uid==appInfos.get(i).getUid()){
+                appInfos.remove(i);
+                this.notifyItemRemoved(i);
+                break;
+            }
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

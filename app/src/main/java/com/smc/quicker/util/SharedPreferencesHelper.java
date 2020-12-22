@@ -16,7 +16,7 @@ public class SharedPreferencesHelper {
         editor = sharedPreferences.edit();
         if(sharedPreferences.getInt("row",0)==0){
             editor.putInt("row",3);
-            editor.putInt("col",4);
+            editor.putInt("col",2);
             editor.putBoolean("autoSave",false);
             editor.commit();
         }
