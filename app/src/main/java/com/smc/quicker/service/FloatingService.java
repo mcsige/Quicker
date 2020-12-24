@@ -15,6 +15,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
@@ -68,6 +69,7 @@ public class FloatingService extends AccessibilityService {
     private int width,height;
     private ViewPager2 viewPager2;
     private static PackageManager pm;
+    private PowerManager.WakeLock wakeLock = null;
 
     private static final int STYLE_HORIZONTAL = 0;
     private static final int STYLE_VERTICAL = 1;
@@ -79,6 +81,9 @@ public class FloatingService extends AccessibilityService {
         pm = getPackageManager();
         new Thread(FloatingService::initPackageList).start();
         super.onCreate();
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, FloatingService.class.getName());
+        wakeLock.acquire();
     }
 
     public static void initPackageList(){
@@ -329,7 +334,12 @@ public class FloatingService extends AccessibilityService {
 
     @Override
     public void onDestroy() {
-        windowManager.removeView(view);
+        if (wakeLock != null) {
+            wakeLock.release();
+            wakeLock = null;
+        }
+        if(windowManager!=null)
+            windowManager.removeView(view);
         windowManager = null;
         unregisterReceiver(receiver);
         super.onDestroy();
